@@ -1,0 +1,37 @@
+# Environment & secrets — NEVER commit these
+.env
+*.env
+
+# Composer dependencies (install via composer install)
+/vendor/
+
+# CodeIgniter writable directory (logs, cache, sessions, uploads)
+/writable/
+
+# User uploads
+/public/uploads/
+
+# Claude Code local settings
+.claude/
+
+# IDE & OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# PHP & composer
+*.phar
+
+# Node (if any frontend tooling is added later)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Build artifacts
+/public/build/
+
+# CodeIgniter debug bar data
+/writable/debugbar/

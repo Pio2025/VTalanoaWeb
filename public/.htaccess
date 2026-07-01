@@ -1,0 +1,15 @@
+Options -Indexes -MultiViews
+
+RewriteEngine On
+
+# Serve existing files/dirs directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route everything through index.php
+RewriteRule ^(.*)$ index.php/$1 [L]
+
+# Block access to sensitive files (Apache 2.4 syntax)
+<FilesMatch "(\.env|composer\.(json|lock)|\.git)">
+    Require all denied
+</FilesMatch>
