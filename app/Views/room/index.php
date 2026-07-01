@@ -12,63 +12,31 @@
 <style>
 /* ── Reconnect banner ────────────────────────────────────── */
 .reconnect-banner {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 9999;
-  background: rgba(239,68,68,.92);
-  color: #fff;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px 16px;
-  font-weight: 600;
-  font-size: 14px;
+  display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: rgba(239,68,68,.92); color: #fff;
+  align-items: center; justify-content: center; gap: 10px;
+  padding: 10px 16px; font-weight: 600; font-size: 14px;
 }
 .reconnect-spinner {
   width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: rSpin 0.8s linear infinite;
-  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+  border-radius: 50%; animation: rSpin 0.8s linear infinite; flex-shrink: 0;
 }
 @keyframes rSpin { to { transform: rotate(360deg); } }
 
 /* ── Time Left indicator ─────────────────────────────────── */
 .time-left-wrap {
-  display: none;
-  align-items: center;
-  gap: 5px;
-  margin-left: 14px;
-  padding: 2px 10px;
-  background: rgba(255,255,255,.06);
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
+  display: none; align-items: center; gap: 5px; margin-left: 14px;
+  padding: 2px 10px; background: var(--rm-btn);
+  border-radius: 20px; font-size: 12px; font-weight: 500;
 }
-.time-left-label {
-  color: rgba(255,255,255,.45);
-  white-space: nowrap;
-}
-#timeRemaining {
-  font-variant-numeric: tabular-nums;
-  color: #94a3b8;
-  min-width: 42px;
-  text-align: right;
-}
+.time-left-label { color: var(--rm-text-3); white-space: nowrap; }
+#timeRemaining   { font-variant-numeric: tabular-nums; color: var(--rm-text-2); min-width: 42px; text-align: right; }
 
 /* ── SweetAlert mobile override ──────────────────────────── */
 @media (max-width: 767px) {
   .swal2-container { padding: 12px !important; }
-  .swal2-popup {
-    width: 100% !important;
-    max-width: 320px !important;
-    margin: 0 auto !important;
-    font-size: 14px !important;
-    padding: 20px 16px !important;
-    border-radius: 16px !important;
-  }
+  .swal2-popup { width: 100% !important; max-width: 320px !important; margin: 0 auto !important; font-size: 14px !important; padding: 20px 16px !important; border-radius: 16px !important; }
   .swal2-title { font-size: 17px !important; }
   .swal2-html-container { font-size: 13px !important; }
   .swal2-actions { flex-wrap: wrap; gap: 8px !important; }
@@ -77,202 +45,78 @@
 
 /* ── Recording indicator ─────────────────────────────────── */
 .rec-indicator {
-  display: none;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 10px;
-  background: rgba(239,68,68,.12);
-  border: 1px solid rgba(239,68,68,.4);
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #ef4444;
-  margin-left: 10px;
-  white-space: nowrap;
+  display: none; align-items: center; gap: 5px; padding: 2px 10px;
+  background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4);
+  border-radius: 20px; font-size: 11px; font-weight: 700; color: #ef4444;
+  margin-left: 10px; white-space: nowrap;
 }
-.rec-dot {
-  width: 8px; height: 8px;
-  background: #ef4444;
-  border-radius: 50%;
-  animation: recPulse 1.2s ease-in-out infinite;
-  flex-shrink: 0;
-}
+.rec-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: recPulse 1.2s ease-in-out infinite; flex-shrink: 0; }
 @keyframes recPulse { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-/* ── Raised-hand badge on tiles ──────────────────────────── */
+/* ── Raised-hand badge ───────────────────────────────────── */
 .hand-raised-badge {
-  position: absolute;
-  top: 6px; left: 6px;   /* left side so it doesn't clash with remove button */
-  font-size: 18px;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,.5);
-  border-radius: 8px;
-  padding: 3px 6px;
-  line-height: 1;
-  z-index: 10;
-  pointer-events: none;
+  position: absolute; top: 6px; left: 6px; font-size: 18px;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.5); border-radius: 8px; padding: 3px 6px;
+  line-height: 1; z-index: 10; pointer-events: none;
 }
 .hand-raised-indicator { font-size: 14px; margin-right: 2px; }
 
-/* ── Host remove button on remote tiles ──────────────────── */
+/* ── Host remove button on tiles ─────────────────────────── */
 .tile-remove-btn {
-  position: absolute;
-  top: 6px; right: 6px;
-  width: 26px; height: 26px;
-  background: rgba(239,68,68,.8);
-  border: none;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 13px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 20;
-  opacity: 0;
-  transition: opacity 0.2s;
-  pointer-events: all;
+  position: absolute; top: 6px; right: 6px;
+  width: 26px; height: 26px; background: rgba(239,68,68,.8);
+  border: none; border-radius: 50%; color: #fff; font-size: 13px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  z-index: 20; opacity: 0; transition: opacity 0.2s; pointer-events: all;
 }
-.video-tile:hover .tile-remove-btn,
-.tile-remove-btn:focus { opacity: 1; }
-@media (max-width: 767px) {
-  .tile-remove-btn { opacity: 0.75; }  /* always visible on touch screens */
-}
+.video-tile:hover .tile-remove-btn, .tile-remove-btn:focus { opacity: 1; }
+@media (max-width: 767px) { .tile-remove-btn { opacity: 0.75; } }
 
 /* ── Background effects buttons in settings ──────────────── */
 .settings-bg-options { display: flex; gap: 8px; }
 .settings-bg-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: rgba(255,255,255,.06);
-  border: 2px solid transparent;
-  border-radius: 10px;
-  padding: 10px 8px;
-  color: rgba(255,255,255,.6);
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 500;
-  transition: all .15s;
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: var(--rm-btn); border: 2px solid transparent;
+  border-radius: 10px; padding: 10px 8px; color: var(--rm-text-2);
+  cursor: pointer; font-size: 11px; font-weight: 500; transition: all .15s;
 }
 .settings-bg-btn i { font-size: 18px; }
-.settings-bg-btn.active,
-.settings-bg-btn:hover { border-color: #00aeef; color: #fff; background: rgba(0,174,239,.1); }
-.settings-hint {
-  font-size: 10px;
-  color: rgba(255,255,255,.4);
-  font-weight: 400;
-  margin-left: auto;
-  white-space: nowrap;
+.settings-bg-btn.active, .settings-bg-btn:hover {
+  border-color: var(--rm-primary); color: var(--rm-text); background: var(--rm-primary-bg);
 }
+.settings-hint { font-size: 10px; color: var(--rm-text-3); font-weight: 400; margin-left: auto; white-space: nowrap; }
 
-/* ── Settings panel close button style ─ */
-#settingsPanel .panel-header .panel-close {
-  background: rgba(255,255,255,.08);
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  width: 32px; height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background .15s;
-}
-#settingsPanel .panel-header .panel-close:hover { background: rgba(255,255,255,.16); }
-
-/* ── Spotlight / focus overlay ───────────────────────────── */
+/* ── Spotlight / focus overlay — always dark (video context) */
 .spotlight-overlay {
-  display: none;
-  position: absolute;
-  inset: 0;
-  z-index: 900;
-  flex-direction: column;
-  background: #0a0a0a;
+  display: none; position: absolute; inset: 0;
+  z-index: 900; flex-direction: column; background: #0a0a0a;
 }
 .spotlight-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
-  background: rgba(0,0,0,.6);
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px; background: rgba(0,0,0,.6); flex-shrink: 0;
 }
 .spotlight-name { color: #fff; font-weight: 600; font-size: 14px; }
-.spotlight-exit-btn {
-  background: rgba(255,255,255,.12);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 14px;
-  font-size: 13px;
-  cursor: pointer;
-}
-.spotlight-main {
-  flex: 1;
-  min-height: 0;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #111;
-}
-.spotlight-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;   /* fills the space — switch to contain to avoid cropping */
-}
-.spotlight-novideo {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #1e2228;
-}
+.spotlight-exit-btn { background: rgba(255,255,255,.12); color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
+.spotlight-main { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; background: #111; }
+.spotlight-video { width: 100%; height: 100%; object-fit: cover; }
+.spotlight-novideo { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #1e2228; }
 .spotlight-strip {
-  height: 90px;
-  flex-shrink: 0;
-  display: flex;
-  overflow-x: auto;
-  gap: 4px;
-  padding: 4px 8px;
-  background: rgba(0,0,0,.7);
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  height: 90px; flex-shrink: 0; display: flex; overflow-x: auto;
+  gap: 4px; padding: 4px 8px; background: rgba(0,0,0,.7);
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .spotlight-strip::-webkit-scrollbar { display: none; }
 .spotlight-thumb {
-  flex-shrink: 0;
-  width: 130px;
-  height: 82px;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  background: #1e2228;
-  border: 2px solid transparent;
-  transition: border-color 0.15s;
+  flex-shrink: 0; width: 130px; height: 82px; border-radius: 8px; overflow: hidden;
+  cursor: pointer; position: relative; background: #1e2228;
+  border: 2px solid transparent; transition: border-color 0.15s;
 }
 .spotlight-thumb:hover { border-color: rgba(255,255,255,.4); }
 .thumb-name {
-  position: absolute;
-  bottom: 4px; left: 4px;
-  color: #fff;
-  font-size: 9px;
-  background: rgba(0,0,0,.65);
-  padding: 2px 5px;
-  border-radius: 4px;
-  max-width: calc(100% - 8px);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  position: absolute; bottom: 4px; left: 4px; color: #fff; font-size: 9px;
+  background: rgba(0,0,0,.65); padding: 2px 5px; border-radius: 4px;
+  max-width: calc(100% - 8px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
 /* ── Mobile tab bar ──────────────────────────────────────── */
@@ -281,232 +125,129 @@
 /* ── Waiting room action buttons ─────────────────────────── */
 .waiting-actions { display: flex; gap: 6px; flex-shrink: 0; }
 .btn-remove-waiting {
-  padding: 4px 10px;
-  background: #7f1d1d22;
-  border: 1px solid #ef4444;
-  color: #ef4444;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
+  padding: 4px 10px; background: rgba(239,68,68,.08);
+  border: 1px solid #ef4444; color: #ef4444; border-radius: 6px;
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: background 0.15s;
 }
-.btn-remove-waiting:hover { background: #ef444433; }
+.btn-remove-waiting:hover { background: rgba(239,68,68,.18); }
+
+/* ── Mobile panel pull handle ────────────────────────────── */
+.room-panel::before {
+  content: ''; display: block; flex-shrink: 0;
+  width: 36px; height: 4px; background: var(--rm-border);
+  border-radius: 2px; margin: 8px auto 0;
+}
 
 /* ── Mobile-responsive Room UI ───────────────────────────── */
 @media (max-width: 767px) {
-
-  /* 1. Lock html/body to visual viewport */
   html, body { height: 100%; overflow: hidden; }
-
-  /* 2. Fixed layout so controls never fall behind browser chrome */
-  .room-layout {
-    position: fixed !important;
-    top: 0; right: 0; bottom: 0; left: 0;
-    display: flex !important;
-    flex-direction: column !important;
-    height: auto !important;
-  }
-
-  /* 3. Compact header */
+  .room-layout { position: fixed !important; top: 0; right: 0; bottom: 0; left: 0; display: flex !important; flex-direction: column !important; height: auto !important; }
   .room-header { padding: 6px 12px; flex-shrink: 0; }
   .room-title  { display: none; }
-
-  /* 4. Video area fills remaining space */
-  .room-main {
-    flex: 1 !important;
-    min-height: 0 !important;
-    overflow: hidden;
-    display: flex;
-  }
-  .video-area { flex: 1; width: 100%; min-height: 0; }
-
-  /* 5. Force tiles to shrink properly in the grid */
-  .video-grid .video-tile {
-    min-width: 0 !important;
-    min-height: 0 !important;
-  }
-
-  /* 6. Panels — fixed bottom sheets */
-  .room-panels {
-    position: fixed !important;
-    top: 0; right: 0; bottom: 0; left: 0;
-    pointer-events: none;
-    z-index: 500;
-    display: block;
-  }
-  /* When a panel is open, the container catches backdrop taps (iOS fix for
-     pointer-events:none parent not properly shielding child touch events). */
+  .room-main   { flex: 1 !important; min-height: 0 !important; overflow: hidden; display: flex; }
+  .video-area  { flex: 1; width: 100%; min-height: 0; }
+  .video-grid .video-tile { min-width: 0 !important; min-height: 0 !important; }
+  .room-panels { position: fixed !important; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; z-index: 500; display: block; }
   .room-panels.panel-is-open { pointer-events: auto; }
-
   .room-panel {
-    display: flex !important;
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 72vh;
-    max-height: 72vh;
-    border-radius: 16px 16px 0 0;
-    flex-direction: column;
-    overflow: hidden;
-    transform: translateY(105%);
-    visibility: hidden;
-    pointer-events: none;
+    display: flex !important; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 72vh; max-height: 72vh;
+    border-radius: 16px 16px 0 0; flex-direction: column; overflow: hidden;
+    transform: translateY(105%); visibility: hidden; pointer-events: none;
     transition: transform 0.3s cubic-bezier(.4,0,.2,1), visibility 0s linear 0.3s;
   }
   .room-panel.panel-open {
-    transform: translateY(0);
-    visibility: visible;
-    pointer-events: auto !important;  /* must override the container's pointer-events:auto */
-    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-    touch-action: manipulation;  /* iOS: eliminates 300ms delay that causes phantom taps */
+    transform: translateY(0); visibility: visible; pointer-events: auto !important;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1); touch-action: manipulation;
   }
-  .room-panel::before {
-    content: '';
-    display: block;
-    flex-shrink: 0;
-    width: 36px; height: 4px;
-    background: rgba(255,255,255,.2);
-    border-radius: 2px;
-    margin: 8px auto 0;
-  }
-
-  /* 7. Backdrop */
   #panelBackdrop {
-    display: none;
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,.55);
-    z-index: 1;
+    display: none; position: absolute; inset: 0;
+    background: rgba(0,0,0,.45); z-index: 1;
     -webkit-tap-highlight-color: transparent;
   }
   #panelBackdrop.active { display: block; }
   .room-panel { z-index: 2; }
 
-  /* 8. Mobile tab bar — replaces control-right on mobile */
+  /* Mobile tab bar */
   .mobile-tab-bar {
-    display: flex;
-    flex-shrink: 0;
-    background: #151820;
-    border-top: 1px solid rgba(255,255,255,.06);
-    padding: 4px 4px 2px;
-    gap: 2px;
-    justify-content: space-around;
+    display: flex; flex-shrink: 0;
+    background: var(--rm-header);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--rm-border);
+    padding: 4px 4px 2px; gap: 2px; justify-content: space-around;
   }
   .mobile-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    background: none;
-    border: none;
-    color: rgba(255,255,255,.6);
-    font-size: 9px;
-    font-weight: 500;
-    min-width: 44px;
-    padding: 5px 6px 4px;
-    border-radius: 8px;
-    position: relative;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: none; border: none; color: var(--rm-text-2);
+    font-size: 9px; font-weight: 500; min-width: 44px;
+    padding: 5px 6px 4px; border-radius: 8px; position: relative;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
-  .mobile-tab i { font-size: 19px; }
-  .mobile-tab.active { color: #00aeef; }
+  .mobile-tab i      { font-size: 19px; }
+  .mobile-tab.active { color: var(--rm-primary); }
   .mobile-tab-badge {
-    position: absolute;
-    top: 1px; right: 2px;
-    background: #ef4444;
-    color: #fff;
-    font-size: 8px;
-    font-weight: 700;
-    min-width: 15px; height: 15px;
-    border-radius: 8px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 0 3px;
+    position: absolute; top: 1px; right: 2px;
+    background: #ef4444; color: #fff; font-size: 8px; font-weight: 700;
+    min-width: 15px; height: 15px; border-radius: 8px;
+    display: none; align-items: center; justify-content: center; padding: 0 3px;
   }
   .mobile-tab-badge.show { display: flex; }
 
-  /* 9. Control bar — only the call controls row on mobile */
+  /* Control bar */
   .control-bar {
-    flex-shrink: 0 !important;
-    flex-direction: row !important;
-    height: auto !important;
+    flex-shrink: 0 !important; flex-direction: row !important; height: auto !important;
     padding: 6px 8px !important;
     padding-bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
-    gap: 4px;
-    justify-content: center;
+    gap: 4px; justify-content: center;
   }
   .control-left  { display: none !important; }
   .control-right { display: none !important; }
-  .control-group.control-center {
-    width: auto;
-    justify-content: center;
-    gap: 6px;
-  }
+  .control-group.control-center { width: auto; justify-content: center; gap: 6px; }
   .ctrl-btn {
-    flex-direction: column !important;
-    min-width: 52px;
-    height: auto !important;
-    padding: 7px 8px 5px !important;
-    gap: 2px;
-    border-radius: 12px;
+    flex-direction: column !important; min-width: 52px; height: auto !important;
+    padding: 7px 8px 5px !important; gap: 2px; border-radius: 12px;
   }
   .ctrl-btn i  { font-size: 20px !important; }
   .ctrl-label  { display: block !important; font-size: 9px !important; line-height: 1.2; }
   .ctrl-btn.ctrl-end { padding: 7px 14px 5px !important; }
-
-  /* 10. Waiting overlay */
   .waiting-overlay-card { width: 92%; max-width: 360px; padding: 24px 20px; }
-
-  /* 11. Screen-share overlay — compact thumbnail strip on mobile */
-  .screen-share-thumbs {
-    height: 72px;
-  }
-  .screen-share-thumbs .video-tile {
-    width: 110px !important;
-    height: 64px !important;
-  }
-
-  /* 12. Spotlight overlay — compact strip + header on mobile */
+  .screen-share-thumbs { height: 72px; }
+  .screen-share-thumbs .video-tile { width: 110px !important; height: 64px !important; }
   .spotlight-header { padding: 6px 12px; }
   .spotlight-strip  { height: 72px; padding: 3px 6px; }
   .spotlight-thumb  { width: 108px; height: 66px; }
 }
 
 /* ── Breakout manager Swal styles ────────────────────────── */
-.br-manager { text-align:left; }
-.br-top { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-.br-count-select,
-.br-room-select {
-  background:#0f172a; border:1px solid rgba(255,255,255,.15);
-  color:#fff; border-radius:6px; padding:4px 8px; font-size:12px;
+.br-manager { text-align: left; }
+.br-top     { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.br-count-select, .br-room-select {
+  background: var(--rm-input); border: 1px solid var(--rm-input-b);
+  color: var(--rm-input-c); border-radius: 6px; padding: 4px 8px; font-size: 12px;
 }
-.br-peers-list { max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
+.br-peers-list { max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
 .br-peer-row {
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
-  background:rgba(255,255,255,.04); padding:8px 10px; border-radius:8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--rm-item-hover); padding: 8px 10px; border-radius: 8px;
 }
-.br-peer-name { font-size:13px; color:#fff; flex:1; }
-.br-room-select { flex-shrink:0; min-width:130px; }
+.br-peer-name  { font-size: 13px; color: var(--rm-text); flex: 1; }
+.br-room-select{ flex-shrink: 0; min-width: 130px; }
 .btn-br-auto {
-  background:rgba(0,174,239,.12); border:1px solid rgba(0,174,239,.3);
-  color:#00aeef; border-radius:6px; padding:4px 10px;
-  font-size:11px; cursor:pointer; white-space:nowrap;
+  background: var(--rm-primary-bg); border: 1px solid var(--rm-primary-b);
+  color: var(--rm-primary); border-radius: 6px; padding: 4px 10px;
+  font-size: 11px; cursor: pointer; white-space: nowrap;
 }
-.btn-br-auto:hover { background:rgba(0,174,239,.24); }
+.btn-br-auto:hover { background: var(--rm-primary-b); }
 
 /* ── Poll notification quick-vote buttons ────────────────── */
 .poll-notif-btn {
-  display:block; width:100%;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  color:#fff; border-radius:8px;
-  padding:8px 14px; font-size:13px;
-  text-align:left; cursor:pointer;
-  transition:background .15s, border-color .15s;
+  display: block; width: 100%;
+  background: var(--rm-btn); border: 1px solid var(--rm-border);
+  color: var(--rm-text); border-radius: 8px;
+  padding: 8px 14px; font-size: 13px; text-align: left; cursor: pointer;
+  transition: background .15s, border-color .15s;
 }
-.poll-notif-btn:hover { background:rgba(0,174,239,.18); border-color:rgba(0,174,239,.4); }
+.poll-notif-btn:hover { background: var(--rm-primary-bg); border-color: var(--rm-primary-b); }
 </style>
 </head>
 <body class="room-body">
@@ -529,9 +270,10 @@
     <!-- Top Bar -->
     <header class="room-header">
         <div class="room-header-left">
-            <div class="room-brand">
-                <img src="<?= base_url('img/logo-white.png') ?>" alt="VTalanoa" style="height:22px;max-width:110px;object-fit:contain;">
-            </div>
+            <a href="<?= base_url('/') ?>" class="room-brand" title="Home">
+                <span class="room-brand-mark" aria-hidden="true"></span>
+                <span class="d-none d-sm-inline">MeetWave</span>
+            </a>
             <div class="room-title"><?= esc($meeting['title']) ?></div>
         </div>
         <div class="room-header-center">
@@ -561,6 +303,9 @@
                     <span id="participantCount">1</span>
                 </span>
             </div>
+            <button class="room-theme-btn" id="themeToggleBtn" onclick="toggleRoomTheme()" title="Toggle dark / light mode" aria-label="Toggle theme">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
         </div>
     </header>
 
@@ -1147,6 +892,31 @@ if (!empty($meeting['end_time'])) {
 ?>
 const MEETING_END_TIME        = <?= $endTime ? "'" . esc($endTime) . "'" : 'null' ?>;
 const MEETING_DURATION_MINUTES = <?= !empty($meeting['duration_minutes']) ? (int)$meeting['duration_minutes'] : '0' ?>;
+</script>
+<script>
+/* ── Room theme toggle (light default, dark opt-in) ───────── */
+(function () {
+  var saved = localStorage.getItem('room-theme') || 'light';
+  if (saved === 'dark') {
+    document.body.classList.add('room-dark');
+    var icon = document.getElementById('themeIcon');
+    if (icon) icon.className = 'fa-solid fa-sun';
+  }
+})();
+
+function toggleRoomTheme() {
+  var body = document.body;
+  var icon = document.getElementById('themeIcon');
+  if (body.classList.contains('room-dark')) {
+    body.classList.remove('room-dark');
+    if (icon) icon.className = 'fa-solid fa-moon';
+    localStorage.setItem('room-theme', 'light');
+  } else {
+    body.classList.add('room-dark');
+    if (icon) icon.className = 'fa-solid fa-sun';
+    localStorage.setItem('room-theme', 'dark');
+  }
+}
 </script>
 <script src="<?= base_url('js/app.js') ?>"></script>
 <script src="<?= base_url('js/sounds.js') ?>"></script>
