@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?= esc($meeting['title']) ?> — VTalanoa</title>
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -271,8 +272,7 @@
     <header class="room-header">
         <div class="room-header-left">
             <a href="<?= base_url('/') ?>" class="room-brand" title="Home">
-                <span class="room-brand-mark" aria-hidden="true"></span>
-                <span class="d-none d-sm-inline">MeetWave</span>
+                <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:30px;max-width:130px;object-fit:contain;">
             </a>
             <div class="room-title"><?= esc($meeting['title']) ?></div>
         </div>

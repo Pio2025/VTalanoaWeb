@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= esc($title) ?></title>
+<link rel="icon" href="<?= base_url('favicon.ico') ?>">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -28,7 +29,7 @@
   <!-- Left icon-nav -->
   <nav class="ws-icon-nav">
     <a href="<?= base_url('dashboard') ?>" class="ws-logo-btn" title="Back to VTalanoa">
-      <img src="<?= base_url('img/logo-white.png') ?>" alt="V" style="height:26px;object-fit:contain;">
+      <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:28px;max-width:140px;object-fit:contain;">
     </a>
 
     <div class="ws-nav-items">

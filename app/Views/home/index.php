@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MeetWave — Free video meetings for everyone</title>
-<link rel="icon" type="image/png" href="<?= base_url('favicon_io/favicon.png') ?>">
+<link rel="icon" href="<?= base_url('favicon.ico') ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -235,8 +235,7 @@
 <header>
   <div class="wrap nav">
     <a class="logo" href="<?= base_url('/') ?>">
-      <span class="logo-mark" aria-hidden="true"></span>
-      MeetWave
+      <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:36px;max-width:180px;object-fit:contain;">
     </a>
     <nav class="nav-links" aria-label="Main">
       <a href="#features">Features</a>
@@ -355,8 +354,7 @@
 <footer>
   <div class="wrap foot">
     <a class="logo" href="<?= base_url('/') ?>">
-      <span class="logo-mark" aria-hidden="true"></span>
-      MeetWave
+      <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:32px;max-width:160px;object-fit:contain;">
     </a>
     <nav class="foot-links" aria-label="Footer">
       <a href="#">Privacy</a>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title ?? 'VTalanoa') ?></title>
-    <link rel="icon" type="image/png" href="<?= base_url('img/icon.png') ?>">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>">
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -21,7 +21,7 @@
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <a href="<?= base_url('dashboard') ?>" class="sidebar-brand">
-            <img src="<?= base_url('img/logo-white.png') ?>" alt="VTalanoa" style="height:32px;max-width:160px;object-fit:contain;">
+            <img src="<?= base_url('img/logo.png') ?>" alt="VTalanoa" style="height:36px;max-width:160px;object-fit:contain;">
         </a>
         <button class="sidebar-toggle d-lg-none" id="sidebarClose">
             <i class="fa-solid fa-xmark"></i>

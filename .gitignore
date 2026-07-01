@@ -2,6 +2,9 @@
 .env
 *.env
 
+# Database dumps (may contain real data)
+*.sql
+
 # Composer dependencies (install via composer install)
 /vendor/
 

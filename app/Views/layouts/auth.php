@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title ?? 'VTalanoa') ?></title>
-    <link rel="icon" type="image/png" href="<?= base_url('img/icon.png') ?>">
+    <link rel="icon" href="<?= base_url('favicon.ico') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,8 +21,7 @@
     <!-- Brand -->
     <div class="auth-brand">
         <a href="<?= base_url('/') ?>" class="auth-brand-link">
-            <span class="auth-logo-mark" aria-hidden="true"></span>
-            <span class="auth-brand-name">MeetWave</span>
+            <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:40px;max-width:200px;object-fit:contain;">
         </a>
         <p class="auth-brand-tagline">Connect, collaborate, and communicate — anywhere.</p>
     </div>
