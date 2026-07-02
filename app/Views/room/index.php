@@ -272,7 +272,7 @@
     <header class="room-header">
         <div class="room-header-left">
             <a href="<?= base_url('/') ?>" class="room-brand" title="Home">
-                <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:30px;max-width:130px;object-fit:contain;">
+                <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" id="roomLogo" style="height:30px;max-width:130px;object-fit:contain;">
             </a>
             <div class="room-title"><?= esc($meeting['title']) ?></div>
         </div>
@@ -901,19 +901,27 @@ const MEETING_DURATION_MINUTES = <?= !empty($meeting['duration_minutes']) ? (int
     document.body.classList.add('room-dark');
     var icon = document.getElementById('themeIcon');
     if (icon) icon.className = 'fa-solid fa-sun';
+    var logo = document.getElementById('roomLogo');
+    if (logo) logo.src = logo.src.replace('logo.png', 'logo-white.png');
   }
 })();
+
+var LOGO_LIGHT = '<?= base_url('img/logo.png') ?>';
+var LOGO_DARK  = '<?= base_url('img/logo-white.png') ?>';
 
 function toggleRoomTheme() {
   var body = document.body;
   var icon = document.getElementById('themeIcon');
+  var logo = document.getElementById('roomLogo');
   if (body.classList.contains('room-dark')) {
     body.classList.remove('room-dark');
     if (icon) icon.className = 'fa-solid fa-moon';
+    if (logo) logo.src = LOGO_LIGHT;
     localStorage.setItem('room-theme', 'light');
   } else {
     body.classList.add('room-dark');
     if (icon) icon.className = 'fa-solid fa-sun';
+    if (logo) logo.src = LOGO_DARK;
     localStorage.setItem('room-theme', 'dark');
   }
 }
