@@ -33,7 +33,7 @@
 
 <div class="email-sent-note">
     <svg viewBox="0 0 16 16" fill="none" width="15" height="15"><circle cx="8" cy="8" r="7" stroke="#1c75bc" stroke-width="1.4"/><path d="M8 7v4M8 5v.5" stroke="#1c75bc" stroke-width="1.4" stroke-linecap="round"/></svg>
-    The link expires in <strong>1 hour</strong>. Check your spam folder if you don't see it.
+    <span>The link expires in <strong>1 hour</strong>. Check your spam folder if you don't see it.</span>
 </div>
 
 <a href="<?= base_url('auth/forgot-password') ?>" class="btn btn-primary btn-app w-100 mt-3">
