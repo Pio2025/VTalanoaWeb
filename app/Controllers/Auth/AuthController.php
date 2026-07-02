@@ -366,7 +366,7 @@ class AuthController extends BaseController
 
     private function createSession(array $user): void
     {
-        $payload = ['user_id' => $user['user_id'], 'email' => $user['email'], 'uuid' => $user['uuid']];
+        $payload = ['user_id' => $user['user_id'], 'email' => $user['email'], 'uuid' => $user['uuid'] ?? null];
         $token   = $this->jwtService->generateToken($payload);
         $refresh = $this->jwtService->generateRefreshToken($payload);
         $this->jwtService->setAuthCookies($token, $refresh);
@@ -375,7 +375,7 @@ class AuthController extends BaseController
 
     private function issueTokens(array $user): array
     {
-        $payload = ['user_id' => $user['user_id'], 'email' => $user['email'], 'uuid' => $user['uuid']];
+        $payload = ['user_id' => $user['user_id'], 'email' => $user['email'], 'uuid' => $user['uuid'] ?? null];
         $token   = $this->jwtService->generateToken($payload);
         $refresh = $this->jwtService->generateRefreshToken($payload);
         return [$token, $refresh];
