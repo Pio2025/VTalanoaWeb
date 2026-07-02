@@ -21,7 +21,7 @@
     <!-- Brand -->
     <div class="auth-brand">
         <a href="<?= base_url('/') ?>" class="auth-brand-link">
-            <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:40px;max-width:200px;object-fit:contain;">
+            <img src="<?= base_url('img/logo-white.png') ?>" alt="MeetWave" style="height:40px;max-width:200px;object-fit:contain;">
         </a>
         <p class="auth-brand-tagline">Connect, collaborate, and communicate — anywhere.</p>
     </div>

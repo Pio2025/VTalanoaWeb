@@ -21,7 +21,7 @@
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <a href="<?= base_url('dashboard') ?>" class="sidebar-brand">
-            <img src="<?= base_url('img/logo.png') ?>" alt="VTalanoa" style="height:36px;max-width:160px;object-fit:contain;">
+            <img src="<?= base_url('img/logo-white.png') ?>" alt="VTalanoa" style="height:36px;max-width:160px;object-fit:contain;">
         </a>
         <button class="sidebar-toggle d-lg-none" id="sidebarClose">
             <i class="fa-solid fa-xmark"></i>
