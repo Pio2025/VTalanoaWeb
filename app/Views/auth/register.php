@@ -99,7 +99,7 @@
     <div class="form-check mb-4">
         <input class="form-check-input" type="checkbox" id="terms" required>
         <label class="form-check-label" for="terms">
-            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            I agree to the <a href="<?= base_url('terms') ?>" target="_blank">Terms of Service</a> and <a href="<?= base_url('privacy') ?>" target="_blank">Privacy Policy</a>
         </label>
     </div>
 

@@ -8,6 +8,8 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('pricing', 'Home::pricing');
 $routes->get('features', 'Home::features');
+$routes->get('terms', 'Home::terms');
+$routes->get('privacy', 'Home::privacy');
 
 // Auth Routes
 $routes->group('auth', function ($routes) {

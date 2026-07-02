@@ -18,4 +18,14 @@ class Home extends BaseController
     {
         return view('home/features');
     }
+
+    public function terms(): string
+    {
+        return view('home/terms');
+    }
+
+    public function privacy(): string
+    {
+        return view('home/privacy');
+    }
 }

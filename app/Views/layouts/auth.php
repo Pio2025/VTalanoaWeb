@@ -43,7 +43,9 @@
                 </ul>
             </div>
             <div class="auth-panel-footer">
-                &copy; <?= date('Y') ?> VTalanoa. All rights reserved.
+                &copy; <?= date('Y') ?> VTalanoa.
+                <a href="<?= base_url('terms') ?>" style="color:rgba(255,255,255,.7);text-decoration:none;margin-left:8px;">Terms</a>
+                <a href="<?= base_url('privacy') ?>" style="color:rgba(255,255,255,.7);text-decoration:none;margin-left:8px;">Privacy</a>
             </div>
         </div>
     </div>
