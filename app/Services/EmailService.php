@@ -122,6 +122,28 @@ class EmailService
         }
     }
 
+    public function sendContactForm(string $fromName, string $fromEmail, string $subject, string $message): bool
+    {
+        try {
+            $this->mailer->clearAddresses();
+            $this->mailer->addAddress(env('MAIL_FROM_EMAIL', 'support@navulifiji.com'), 'VTalanoa Support');
+            $this->mailer->addReplyTo($fromEmail, $fromName);
+            $this->mailer->Subject = '[Contact] ' . $subject;
+            $this->mailer->Body    = view('email/contact_form', [
+                'fromName'  => $fromName,
+                'fromEmail' => $fromEmail,
+                'subject'   => $subject,
+                'message'   => $message,
+            ]);
+            $this->mailer->AltBody = "From: {$fromName} <{$fromEmail}>\n\n{$message}";
+            $this->mailer->send();
+            return true;
+        } catch (\Throwable $e) {
+            log_message('error', '[EmailService] sendContactForm failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function sendEmailVerification(string $toEmail, string $toName, string $verifyLink): bool
     {
         try {

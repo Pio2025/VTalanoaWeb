@@ -10,6 +10,8 @@ $routes->get('pricing', 'Home::pricing');
 $routes->get('features', 'Home::features');
 $routes->get('terms', 'Home::terms');
 $routes->get('privacy', 'Home::privacy');
+$routes->get('contact', 'Home::contact');
+$routes->post('contact', 'Home::contactSubmit');
 
 // Auth Routes
 $routes->group('auth', function ($routes) {

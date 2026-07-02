@@ -650,8 +650,8 @@
     <nav class="foot-links" aria-label="Footer">
       <a href="<?= base_url('privacy') ?>">Privacy</a>
       <a href="<?= base_url('terms') ?>">Terms</a>
-      <a href="mailto:support@navulifiji.com">Support</a>
-      <a href="mailto:support@navulifiji.com">Contact</a>
+      <a href="<?= base_url('contact') ?>">Support</a>
+      <a href="<?= base_url('contact') ?>">Contact</a>
     </nav>
     <span class="copy">&copy; <?= date('Y') ?> VTalanoa. All rights reserved.</span>
   </div>
