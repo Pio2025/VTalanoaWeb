@@ -12,6 +12,7 @@ $routes->get('terms', 'Home::terms');
 $routes->get('privacy', 'Home::privacy');
 $routes->get('contact', 'Home::contact');
 $routes->post('contact', 'Home::contactSubmit');
+$routes->get('support', 'Home::support');
 
 // Auth Routes
 $routes->group('auth', function ($routes) {

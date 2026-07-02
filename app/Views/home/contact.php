@@ -110,7 +110,7 @@
       <div class="contact-info">
         <h4>General Support</h4>
         <p>Questions about your account, meetings, or billing.</p>
-        <a href="mailto:support@navulifiji.com">support@navulifiji.com</a>
+        <a href="mailto:support@vtalanoa.com">support@vtalanoa.com</a>
       </div>
     </div>
 
@@ -119,7 +119,7 @@
       <div class="contact-info">
         <h4>Security</h4>
         <p>Report a vulnerability or security concern.</p>
-        <a href="mailto:security@navulifiji.com">security@navulifiji.com</a>
+        <a href="mailto:security@vtalanoa.com">security@vtalanoa.com</a>
       </div>
     </div>
 
@@ -128,7 +128,7 @@
       <div class="contact-info">
         <h4>Privacy &amp; Data</h4>
         <p>Data requests, deletion, or policy questions.</p>
-        <a href="mailto:privacy@navulifiji.com">privacy@navulifiji.com</a>
+        <a href="mailto:privacy@vtalanoa.com">privacy@vtalanoa.com</a>
       </div>
     </div>
 
@@ -137,7 +137,7 @@
       <div class="contact-info">
         <h4>Business &amp; Partnerships</h4>
         <p>Enterprise plans, integrations, and partnerships.</p>
-        <a href="mailto:business@navulifiji.com">business@navulifiji.com</a>
+        <a href="mailto:business@vtalanoa.com">business@vtalanoa.com</a>
       </div>
     </div>
 

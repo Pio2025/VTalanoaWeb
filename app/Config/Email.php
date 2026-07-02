@@ -6,7 +6,7 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = 'noreply@navulifiji.com';
+    public string $fromEmail  = 'noreply@vtalanoa.com';
     public string $fromName   = 'VTalanoa';
     public string $recipients = '';
 
@@ -28,7 +28,7 @@ class Email extends BaseConfig
     /**
      * SMTP Server Hostname
      */
-    public string $SMTPHost = 'mail.navulifiji.com';
+    public string $SMTPHost = 'mail.vtalanoa.com';
 
     /**
      * Which SMTP authentication method to use: login, plain
@@ -38,7 +38,7 @@ class Email extends BaseConfig
     /**
      * SMTP Username
      */
-    public string $SMTPUser = 'noreply@navulifiji.com';
+    public string $SMTPUser = 'noreply@vtalanoa.com';
 
     /**
      * SMTP Password

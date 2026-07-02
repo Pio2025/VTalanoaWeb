@@ -34,6 +34,11 @@ class Home extends BaseController
         return view('home/contact');
     }
 
+    public function support(): string
+    {
+        return view('home/support');
+    }
+
     public function contactSubmit(): mixed
     {
         $rules = [
@@ -56,7 +61,7 @@ class Home extends BaseController
 
         if (!$sent) {
             return redirect()->back()->withInput()
-                             ->with('error', 'We could not send your message. Please email us directly at support@navulifiji.com.');
+                             ->with('error', 'We could not send your message. Please email us directly at support@vtalanoa.com.');
         }
 
         return redirect()->to(base_url('contact'))->with('success', 'Thank you! Your message has been sent. We\'ll get back to you within 1–2 business days.');

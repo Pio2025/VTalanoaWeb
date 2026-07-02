@@ -357,10 +357,10 @@
       <img src="<?= base_url('img/logo-web.png') ?>" alt="MeetWave" style="height:32px;max-width:160px;object-fit:contain;">
     </a>
     <nav class="foot-links" aria-label="Footer">
+      <a href="<?= base_url('support') ?>">Help</a>
+      <a href="<?= base_url('contact') ?>">Contact</a>
       <a href="<?= base_url('privacy') ?>">Privacy</a>
       <a href="<?= base_url('terms') ?>">Terms</a>
-      <a href="<?= base_url('contact') ?>">Support</a>
-      <a href="<?= base_url('contact') ?>">Contact</a>
     </nav>
     <span class="copy">&copy; <?= date('Y') ?> MeetWave. All rights reserved.</span>
   </div>

@@ -107,7 +107,7 @@
 
   <section id="acceptance">
     <h2>1. Acceptance of Terms</h2>
-    <p>By accessing or using VTalanoa ("the Service", "we", "us", or "our") at <strong>meet.navulifiji.com</strong>, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to all the terms, you may not use the Service.</p>
+    <p>By accessing or using VTalanoa ("the Service", "we", "us", or "our") at <strong>vtalanoa.com</strong>, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to all the terms, you may not use the Service.</p>
     <p>These Terms apply to all visitors, users, and others who access or use the Service. By creating an account or using any feature of VTalanoa, you confirm you are at least 18 years of age, or 13 years of age with parental consent, and have the legal capacity to enter into these Terms.</p>
   </section>
 
@@ -133,7 +133,7 @@
       <li>Maintain and promptly update your account information</li>
       <li>Keep your password secure and not share it with others</li>
       <li>Accept responsibility for all activities that occur under your account</li>
-      <li>Notify us immediately at <a href="mailto:support@navulifiji.com">support@navulifiji.com</a> of any unauthorised access</li>
+      <li>Notify us immediately at <a href="mailto:support@vtalanoa.com">support@vtalanoa.com</a> of any unauthorised access</li>
     </ul>
     <p>You may not create an account on behalf of someone else without their explicit consent, or use another person's account without permission.</p>
   </section>
@@ -188,13 +188,13 @@
       <li>Provide accurate billing information</li>
       <li>Authorise us to charge your payment method on a recurring basis</li>
     </ul>
-    <p>Subscriptions renew automatically unless cancelled before the renewal date. Refunds are handled on a case-by-case basis — contact <a href="mailto:support@navulifiji.com">support@navulifiji.com</a> within 7 days of a charge if you believe an error occurred.</p>
+    <p>Subscriptions renew automatically unless cancelled before the renewal date. Refunds are handled on a case-by-case basis — contact <a href="mailto:support@vtalanoa.com">support@vtalanoa.com</a> within 7 days of a charge if you believe an error occurred.</p>
     <p>We reserve the right to change pricing with 30 days' notice to existing subscribers.</p>
   </section>
 
   <section id="termination">
     <h2>9. Termination</h2>
-    <p>You may delete your account at any time by contacting us at <a href="mailto:support@navulifiji.com">support@navulifiji.com</a>. Upon deletion, your data will be removed in accordance with our Privacy Policy.</p>
+    <p>You may delete your account at any time by contacting us at <a href="mailto:support@vtalanoa.com">support@vtalanoa.com</a>. Upon deletion, your data will be removed in accordance with our Privacy Policy.</p>
     <p>We may suspend or terminate your access to the Service immediately, without prior notice, if you violate these Terms, engage in fraudulent activity, or if we are required to do so by law. Upon termination, your right to use the Service will immediately cease.</p>
   </section>
 
@@ -215,8 +215,8 @@
     <h2>12. Contact Us</h2>
     <p>If you have any questions about these Terms of Service, please contact us:</p>
     <ul>
-      <li><strong>Email:</strong> <a href="mailto:support@navulifiji.com">support@navulifiji.com</a></li>
-      <li><strong>Website:</strong> <a href="<?= base_url('/') ?>">meet.navulifiji.com</a></li>
+      <li><strong>Email:</strong> <a href="mailto:support@vtalanoa.com">support@vtalanoa.com</a></li>
+      <li><strong>Website:</strong> <a href="<?= base_url('/') ?>">vtalanoa.com</a></li>
     </ul>
   </section>
 </div>
@@ -229,7 +229,7 @@
     <nav class="foot-links" aria-label="Footer">
       <a href="<?= base_url('privacy') ?>">Privacy Policy</a>
       <a href="<?= base_url('terms') ?>">Terms of Service</a>
-      <a href="mailto:support@navulifiji.com">Support</a>
+      <a href="mailto:support@vtalanoa.com">Support</a>
     </nav>
     <span class="copy">&copy; <?= date('Y') ?> VTalanoa. All rights reserved.</span>
   </div>

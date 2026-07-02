@@ -52,7 +52,7 @@ class EmailService
         }
 
         $this->mailer->setFrom(
-            env('MAIL_FROM_EMAIL', 'noreply@navulifiji.com'),
+            env('MAIL_FROM_EMAIL', 'noreply@vtalanoa.com'),
             env('MAIL_FROM_NAME',  'VTalanoa')
         );
         $this->mailer->isHTML(true);
@@ -126,7 +126,7 @@ class EmailService
     {
         try {
             $this->mailer->clearAddresses();
-            $this->mailer->addAddress(env('MAIL_FROM_EMAIL', 'support@navulifiji.com'), 'VTalanoa Support');
+            $this->mailer->addAddress(env('MAIL_FROM_EMAIL', 'support@vtalanoa.com'), 'VTalanoa Support');
             $this->mailer->addReplyTo($fromEmail, $fromName);
             $this->mailer->Subject = '[Contact] ' . $subject;
             $this->mailer->Body    = view('email/contact_form', [

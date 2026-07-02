@@ -107,7 +107,7 @@
 
   <section id="overview">
     <h2>1. Overview</h2>
-    <p>VTalanoa ("we", "us", "our") is a video meeting and collaboration platform operated by Navuli Fiji and accessible at <strong>meet.navulifiji.com</strong>. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.</p>
+    <p>VTalanoa ("we", "us", "our") is a video meeting and collaboration platform operated by VTalanoa and accessible at <strong>vtalanoa.com</strong>. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.</p>
     <p>By using VTalanoa, you agree to the collection and use of information in accordance with this policy. If you do not agree with any part of this policy, please discontinue use of the Service.</p>
     <div class="highlight-box">
       We do not sell your personal data to third parties. Ever.
@@ -219,7 +219,7 @@
       <li>JWT-based session authentication</li>
       <li>Regular security reviews and dependency updates</li>
     </ul>
-    <p>Despite our efforts, no method of transmission over the internet or electronic storage is 100% secure. We cannot guarantee absolute security, and you use the Service at your own risk. Please notify us immediately at <a href="mailto:security@navulifiji.com">security@navulifiji.com</a> if you suspect any breach.</p>
+    <p>Despite our efforts, no method of transmission over the internet or electronic storage is 100% secure. We cannot guarantee absolute security, and you use the Service at your own risk. Please notify us immediately at <a href="mailto:security@vtalanoa.com">security@vtalanoa.com</a> if you suspect any breach.</p>
   </section>
 
   <section id="rights">
@@ -233,7 +233,7 @@
       <li><strong>Objection</strong> — object to certain types of data processing</li>
       <li><strong>Restriction</strong> — request that we restrict how we use your data</li>
     </ul>
-    <p>To exercise any of these rights, contact us at <a href="mailto:privacy@navulifiji.com">privacy@navulifiji.com</a>. We will respond within 30 days.</p>
+    <p>To exercise any of these rights, contact us at <a href="mailto:privacy@vtalanoa.com">privacy@vtalanoa.com</a>. We will respond within 30 days.</p>
     <div class="highlight-box">
       You can update your name, email, and profile photo at any time from your <a href="<?= base_url('profile') ?>">account profile page</a>.
     </div>
@@ -241,7 +241,7 @@
 
   <section id="children">
     <h2>9. Children's Privacy</h2>
-    <p>VTalanoa is not directed at children under the age of 13. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us immediately at <a href="mailto:privacy@navulifiji.com">privacy@navulifiji.com</a> and we will delete the information promptly.</p>
+    <p>VTalanoa is not directed at children under the age of 13. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us immediately at <a href="mailto:privacy@vtalanoa.com">privacy@vtalanoa.com</a> and we will delete the information promptly.</p>
     <p>Users between 13 and 18 may use VTalanoa only with verifiable parental or guardian consent.</p>
   </section>
 
@@ -261,10 +261,10 @@
     <h2>12. Contact Us</h2>
     <p>If you have questions, concerns, or requests regarding this Privacy Policy, please contact us:</p>
     <ul>
-      <li><strong>General privacy:</strong> <a href="mailto:privacy@navulifiji.com">privacy@navulifiji.com</a></li>
-      <li><strong>Security issues:</strong> <a href="mailto:security@navulifiji.com">security@navulifiji.com</a></li>
-      <li><strong>General support:</strong> <a href="mailto:support@navulifiji.com">support@navulifiji.com</a></li>
-      <li><strong>Website:</strong> <a href="<?= base_url('/') ?>">meet.navulifiji.com</a></li>
+      <li><strong>General privacy:</strong> <a href="mailto:privacy@vtalanoa.com">privacy@vtalanoa.com</a></li>
+      <li><strong>Security issues:</strong> <a href="mailto:security@vtalanoa.com">security@vtalanoa.com</a></li>
+      <li><strong>General support:</strong> <a href="mailto:support@vtalanoa.com">support@vtalanoa.com</a></li>
+      <li><strong>Website:</strong> <a href="<?= base_url('/') ?>">vtalanoa.com</a></li>
     </ul>
   </section>
 </div>
@@ -277,7 +277,7 @@
     <nav class="foot-links" aria-label="Footer">
       <a href="<?= base_url('privacy') ?>">Privacy Policy</a>
       <a href="<?= base_url('terms') ?>">Terms of Service</a>
-      <a href="mailto:support@navulifiji.com">Support</a>
+      <a href="mailto:support@vtalanoa.com">Support</a>
     </nav>
     <span class="copy">&copy; <?= date('Y') ?> VTalanoa. All rights reserved.</span>
   </div>

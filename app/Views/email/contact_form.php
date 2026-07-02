@@ -38,7 +38,7 @@
     </p>
   </div>
   <div class="footer">
-    &copy; <?= date('Y') ?> VTalanoa &mdash; Submitted via meet.navulifiji.com/contact
+    &copy; <?= date('Y') ?> VTalanoa &mdash; Submitted via vtalanoa.com/contact
   </div>
 </div>
 </body>
