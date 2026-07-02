@@ -4,6 +4,7 @@ namespace App\Controllers\Auth;
 
 use App\Controllers\BaseController;
 use App\Models\UserModel;
+use App\Models\PasswordResetModel;
 use App\Services\JWTService;
 use App\Services\EmailService;
 
@@ -108,41 +109,57 @@ class AuthController extends BaseController
 
     public function forgotPassword(): mixed
     {
-        $email = $this->request->getPost('email');
-        $user  = $this->userModel->findByEmail($email);
+        $rules = ['email' => 'required|valid_email'];
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
 
-        if ($user) {
-            $token    = bin2hex(random_bytes(32));
-            $resetUrl = base_url("auth/reset-password/{$token}");
+        $email            = strtolower(trim($this->request->getPost('email')));
+        $passwordResetModel = new PasswordResetModel();
+        $passwordResetModel->purgeExpired();
 
-            // Store token in cache (5 min expiry handled by cache)
-            cache()->save("pwd_reset_{$token}", $user['user_id'], 3600);
+        // Always show the same confirmation page — never reveal if an email exists
+        if ($passwordResetModel->isRateLimited($email)) {
+            return view('auth/email_sent', ['title' => 'Check Your Inbox — VTalanoa', 'email' => $email]);
+        }
+
+        $user = $this->userModel->findByEmail($email);
+
+        if ($user && $user['user_status'] === 'Active') {
+            $plainToken = $passwordResetModel->createToken($email);
+            $resetUrl   = base_url("auth/reset-password/{$plainToken}");
 
             try {
-                $emailService = new EmailService();
-                $emailService->sendPasswordReset($user['email'], $user['fname'], $resetUrl);
+                (new EmailService())->sendPasswordReset($user['email'], $user['fname'], $resetUrl);
             } catch (\Exception $e) {
                 log_message('error', 'Password reset email failed: ' . $e->getMessage());
             }
         }
 
-        return redirect()->back()->with('success', 'If that email exists, a reset link has been sent.');
+        return view('auth/email_sent', ['title' => 'Check Your Inbox — VTalanoa', 'email' => $email]);
     }
 
     public function resetPasswordPage(string $token): mixed
     {
-        $userId = cache("pwd_reset_{$token}");
-        if (!$userId) {
-            return redirect()->to(base_url('auth/forgot-password'))->with('error', 'Invalid or expired reset link.');
+        $passwordResetModel = new PasswordResetModel();
+        $record = $passwordResetModel->findValidByToken($token);
+
+        if (!$record) {
+            return redirect()->to(base_url('auth/forgot-password'))
+                             ->with('error', 'This reset link has expired or is invalid. Please request a new one.');
         }
-        return view('auth/reset_password', ['title' => 'Set New Password', 'token' => $token]);
+
+        return view('auth/reset_password', ['title' => 'Set New Password — VTalanoa', 'token' => $token]);
     }
 
     public function resetPassword(string $token): mixed
     {
-        $userId = cache("pwd_reset_{$token}");
-        if (!$userId) {
-            return redirect()->to(base_url('auth/forgot-password'))->with('error', 'Invalid or expired reset link.');
+        $passwordResetModel = new PasswordResetModel();
+        $record = $passwordResetModel->findValidByToken($token);
+
+        if (!$record) {
+            return redirect()->to(base_url('auth/forgot-password'))
+                             ->with('error', 'This reset link has expired or is invalid. Please request a new one.');
         }
 
         $rules = [
@@ -154,12 +171,19 @@ class AuthController extends BaseController
             return redirect()->back()->with('errors', $this->validator->getErrors());
         }
 
-        $this->userModel->update($userId, [
+        $user = $this->userModel->findByEmail($record['email']);
+        if (!$user) {
+            return redirect()->to(base_url('auth/forgot-password'))->with('error', 'Account not found.');
+        }
+
+        $this->userModel->update($user['user_id'], [
             'password' => password_hash($this->request->getPost('password'), PASSWORD_BCRYPT, ['cost' => 12]),
         ]);
 
-        cache()->delete("pwd_reset_{$token}");
-        return redirect()->to(base_url('auth/login'))->with('success', 'Password updated. Please sign in.');
+        $passwordResetModel->deleteByToken($token);
+
+        return redirect()->to(base_url('auth/login'))
+                         ->with('success', 'Your password has been updated. Please sign in.');
     }
 
     public function profilePage(): mixed
@@ -253,12 +277,61 @@ class AuthController extends BaseController
 
     public function apiForgotPassword(): mixed
     {
-        return $this->response->setJSON(['message' => 'Reset link sent if email exists.']);
+        $data  = $this->request->getJSON(true);
+        $email = strtolower(trim($data['email'] ?? ''));
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->response->setJSON(['message' => 'Invalid email address.'])->setStatusCode(422);
+        }
+
+        $passwordResetModel = new PasswordResetModel();
+        $passwordResetModel->purgeExpired();
+
+        if (!$passwordResetModel->isRateLimited($email)) {
+            $user = $this->userModel->findByEmail($email);
+            if ($user && $user['user_status'] === 'Active') {
+                $plainToken = $passwordResetModel->createToken($email);
+                $resetUrl   = base_url("auth/reset-password/{$plainToken}");
+                try {
+                    (new EmailService())->sendPasswordReset($user['email'], $user['fname'], $resetUrl);
+                } catch (\Exception $e) {
+                    log_message('error', 'API password reset email failed: ' . $e->getMessage());
+                }
+            }
+        }
+
+        return $this->response->setJSON(['message' => 'If that email is registered, a reset link has been sent.']);
     }
 
     public function apiResetPassword(string $token): mixed
     {
-        return $this->response->setJSON(['message' => 'Not implemented via API']);
+        $data               = $this->request->getJSON(true);
+        $password           = $data['password'] ?? '';
+        $passwordConfirm    = $data['password_confirm'] ?? '';
+        $passwordResetModel = new PasswordResetModel();
+        $record             = $passwordResetModel->findValidByToken($token);
+
+        if (!$record) {
+            return $this->response->setJSON(['error' => 'Invalid or expired token.'])->setStatusCode(400);
+        }
+        if (strlen($password) < 8) {
+            return $this->response->setJSON(['error' => 'Password must be at least 8 characters.'])->setStatusCode(422);
+        }
+        if ($password !== $passwordConfirm) {
+            return $this->response->setJSON(['error' => 'Passwords do not match.'])->setStatusCode(422);
+        }
+
+        $user = $this->userModel->findByEmail($record['email']);
+        if (!$user) {
+            return $this->response->setJSON(['error' => 'Account not found.'])->setStatusCode(404);
+        }
+
+        $this->userModel->update($user['user_id'], [
+            'password' => password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]),
+        ]);
+        $passwordResetModel->deleteByToken($token);
+
+        return $this->response->setJSON(['message' => 'Password updated successfully.']);
     }
 
     public function me(): mixed
