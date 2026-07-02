@@ -12,31 +12,38 @@ class EmailService
     public function __construct()
     {
         $this->mailer = new PHPMailer(true);
-        $this->mailer->isSMTP();
-        $this->mailer->Host     = env('MAIL_HOST', 'smtp.gmail.com');
-        $this->mailer->SMTPAuth = true;
-        $this->mailer->Username = env('MAIL_USER', '');
-        $this->mailer->Password = env('MAIL_PASS', '');
-        $this->mailer->Port     = (int) env('MAIL_PORT', 587);
 
-        $port = (int) env('MAIL_PORT', 587);
-        if ($port === 465) {
-            $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $driver = strtolower(env('MAIL_DRIVER', 'smtp'));
+
+        if ($driver === 'mail') {
+            // Use PHP's built-in mail() — no SMTP auth needed, works on shared hosting
+            $this->mailer->isMail();
         } else {
-            $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            // SMTP driver
+            $this->mailer->isSMTP();
+            $this->mailer->Host     = env('MAIL_HOST', 'localhost');
+            $this->mailer->Port     = (int) env('MAIL_PORT', 587);
+            $this->mailer->SMTPAuth = true;
+            $this->mailer->Username = env('MAIL_USER', '');
+            $this->mailer->Password = env('MAIL_PASS', '');
+
+            if ((int) env('MAIL_PORT', 587) === 465) {
+                $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            } else {
+                $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            }
+
+            $this->mailer->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
+                    'allow_self_signed' => true,
+                ],
+            ];
         }
 
-        // Bypass SSL cert verification — safe for local/dev (WAMP) and self-signed certs
-        $this->mailer->SMTPOptions = [
-            'ssl' => [
-                'verify_peer'       => false,
-                'verify_peer_name'  => false,
-                'allow_self_signed' => true,
-            ],
-        ];
-
         $this->mailer->setFrom(
-            env('MAIL_FROM_EMAIL', 'noreply@navulimeet.com'),
+            env('MAIL_FROM_EMAIL', 'noreply@navulifiji.com'),
             env('MAIL_FROM_NAME',  'VTalanoa')
         );
         $this->mailer->isHTML(true);
