@@ -14,7 +14,7 @@
         <div class="input-icon-wrap">
             <i class="fa-solid fa-envelope input-icon"></i>
             <input type="email" id="email" name="email" class="form-control form-control-app"
-                   placeholder="you@example.com" required autofocus>
+                   placeholder="you@example.com" value="<?= old('email') ?>" required autofocus>
         </div>
     </div>
 

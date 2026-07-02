@@ -97,10 +97,10 @@ class EmailService
                 'name'      => $toName,
                 'resetLink' => $resetLink,
             ]);
-            $this->mailer->AltBody = "Reset your password: {$resetLink}";
+            $this->mailer->AltBody = "Reset your VTalanoa password by visiting this link: {$resetLink}\n\nThis link expires in 1 hour.";
             $this->mailer->send();
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             log_message('error', '[EmailService] sendPasswordReset failed: ' . $e->getMessage());
             return false;
         }

@@ -114,26 +114,37 @@ class AuthController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $email            = strtolower(trim($this->request->getPost('email')));
+        $email = strtolower(trim($this->request->getPost('email')));
+
+        // Verify the email belongs to a registered, active account
+        $user = $this->userModel->findByEmail($email);
+        if (!$user) {
+            return redirect()->back()->withInput()
+                             ->with('error', 'No account found with that email address. Please check and try again.');
+        }
+        if ($user['user_status'] !== 'Active') {
+            return redirect()->back()->withInput()
+                             ->with('error', 'This account is suspended. Please contact support.');
+        }
+
         $passwordResetModel = new PasswordResetModel();
         $passwordResetModel->purgeExpired();
 
-        // Always show the same confirmation page — never reveal if an email exists
-        if ($passwordResetModel->isRateLimited($email)) {
+        // Cooldown: if a link was sent in the last 2 minutes show the confirmation
+        // page without resending (prevents accidental spam)
+        if ($passwordResetModel->isRecentlySent($email)) {
             return view('auth/email_sent', ['title' => 'Check Your Inbox — VTalanoa', 'email' => $email]);
         }
 
-        $user = $this->userModel->findByEmail($email);
+        // Upsert token — update existing row or create a new one
+        $plainToken = $passwordResetModel->upsertToken($email);
+        $resetUrl   = base_url("auth/reset-password/{$plainToken}");
 
-        if ($user && $user['user_status'] === 'Active') {
-            $plainToken = $passwordResetModel->createToken($email);
-            $resetUrl   = base_url("auth/reset-password/{$plainToken}");
-
-            try {
-                (new EmailService())->sendPasswordReset($user['email'], $user['fname'], $resetUrl);
-            } catch (\Exception $e) {
-                log_message('error', 'Password reset email failed: ' . $e->getMessage());
-            }
+        // Send email — show a clear error if delivery fails
+        $sent = (new EmailService())->sendPasswordReset($user['email'], $user['fname'], $resetUrl);
+        if (!$sent) {
+            return redirect()->back()->withInput()
+                             ->with('error', 'We could not send the reset email. Please try again in a few minutes or contact support.');
         }
 
         return view('auth/email_sent', ['title' => 'Check Your Inbox — VTalanoa', 'email' => $email]);
@@ -284,23 +295,24 @@ class AuthController extends BaseController
             return $this->response->setJSON(['message' => 'Invalid email address.'])->setStatusCode(422);
         }
 
+        $user = $this->userModel->findByEmail($email);
+        if (!$user || $user['user_status'] !== 'Active') {
+            return $this->response->setJSON(['error' => 'No active account found with that email.'])->setStatusCode(404);
+        }
+
         $passwordResetModel = new PasswordResetModel();
         $passwordResetModel->purgeExpired();
 
-        if (!$passwordResetModel->isRateLimited($email)) {
-            $user = $this->userModel->findByEmail($email);
-            if ($user && $user['user_status'] === 'Active') {
-                $plainToken = $passwordResetModel->createToken($email);
-                $resetUrl   = base_url("auth/reset-password/{$plainToken}");
-                try {
-                    (new EmailService())->sendPasswordReset($user['email'], $user['fname'], $resetUrl);
-                } catch (\Exception $e) {
-                    log_message('error', 'API password reset email failed: ' . $e->getMessage());
-                }
+        if (!$passwordResetModel->isRecentlySent($email)) {
+            $plainToken = $passwordResetModel->upsertToken($email);
+            $resetUrl   = base_url("auth/reset-password/{$plainToken}");
+            $sent = (new EmailService())->sendPasswordReset($user['email'], $user['fname'], $resetUrl);
+            if (!$sent) {
+                return $this->response->setJSON(['error' => 'Failed to send reset email. Please try again.'])->setStatusCode(500);
             }
         }
 
-        return $this->response->setJSON(['message' => 'If that email is registered, a reset link has been sent.']);
+        return $this->response->setJSON(['message' => 'A password reset link has been sent to your email.']);
     }
 
     public function apiResetPassword(string $token): mixed
