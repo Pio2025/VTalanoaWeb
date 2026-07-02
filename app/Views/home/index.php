@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeetWave — Free video meetings for everyone</title>
+<title>VTalanoa — Free video meetings for everyone</title>
 <link rel="icon" href="<?= base_url('favicon.ico') ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -224,7 +224,7 @@
 <div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
   <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&#x2715;</button>
   <a href="#features" onclick="closeMobileNav()">Features</a>
-  <a href="#pricing" onclick="closeMobileNav()">Pricing</a>
+  <a href="<?= base_url('pricing') ?>" onclick="closeMobileNav()">Pricing</a>
   <a href="#download" onclick="closeMobileNav()">Download</a>
   <a href="#help" onclick="closeMobileNav()">Help</a>
   <div class="divider"></div>
@@ -239,7 +239,7 @@
     </a>
     <nav class="nav-links" aria-label="Main">
       <a href="#features">Features</a>
-      <a href="#pricing">Pricing</a>
+      <a href="<?= base_url('pricing') ?>">Pricing</a>
       <a href="#download">Download</a>
       <a href="#help">Help</a>
     </nav>
