@@ -2,4 +2,4 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home2/vbgwpgmy/public_html/vtalanoa/
-    - /bin/true
+    - echo "Deployed to $DEPLOYPATH at $(date)"
