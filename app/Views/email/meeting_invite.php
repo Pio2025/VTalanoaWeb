@@ -7,16 +7,14 @@
 <style>
   body { margin:0; background:#f1f5f9; font-family:'Segoe UI',Arial,sans-serif; }
   .wrap { max-width:560px; margin:32px auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,.08); }
-  .header { background:linear-gradient(135deg,#262262 0%,#3d3797 50%,#0090c8 100%); padding:36px 32px; text-align:center; }
-  .logo { display:inline-flex; align-items:center; gap:10px; color:#fff; font-size:22px; font-weight:800; }
-  .logo-icon { width:40px; height:40px; background:#00aeef; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .header { background:linear-gradient(135deg,#262262 0%,#3d3797 50%,#1c75bc 100%); padding:32px; text-align:center; }
   .header h2 { color:#fff; margin:16px 0 0; font-size:18px; font-weight:600; }
   .body { padding:36px 32px; }
   p  { margin:0 0 14px; color:#475569; font-size:15px; line-height:1.6; }
   .meeting-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin:20px 0; }
   .meeting-title { font-size:18px; font-weight:700; color:#1e293b; margin-bottom:14px; }
   .meta-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; font-size:14px; color:#475569; }
-  .meta-icon { color:#00aeef; width:18px; flex-shrink:0; margin-top:1px; }
+  .meta-icon { color:#1c75bc; width:18px; flex-shrink:0; margin-top:1px; }
   .meta-label { font-weight:600; color:#334155; min-width:90px; }
   .meta-value { color:#475569; }
   .pw-box { background:#fff7ed; border:1.5px solid #fed7aa; border-radius:8px; padding:12px 16px; margin-top:14px; }
@@ -25,7 +23,7 @@
   .id-box { background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:8px; padding:12px 16px; margin-top:10px; }
   .id-box-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#2563eb; margin-bottom:4px; }
   .id-value { font-size:20px; font-weight:800; color:#1e293b; letter-spacing:3px; font-family:monospace; }
-  .btn { display:inline-block; padding:14px 32px; background:#00aeef; color:#fff; font-size:16px; font-weight:700; border-radius:10px; text-decoration:none; margin:12px 0; }
+  .btn { display:inline-block; padding:14px 32px; background:#1c75bc; color:#fff; font-size:16px; font-weight:700; border-radius:10px; text-decoration:none; margin:12px 0; }
   .divider { height:1px; background:#e2e8f0; margin:20px 0; }
   .footer { text-align:center; padding:20px; background:#f8fafc; font-size:12px; color:#94a3b8; }
 </style>
@@ -33,10 +31,7 @@
 <body>
 <div class="wrap">
   <div class="header">
-    <div class="logo">
-      <div class="logo-icon">V</div>
-      VTalanoa
-    </div>
+    <img src="<?= base_url('img/logo-white.png') ?>" alt="VTalanoa" width="160" style="height:auto;display:block;margin:0 auto;">
     <?php if (!empty($isHostCopy)): ?>
     <h2>&#10003; Your Meeting Has Been Created</h2>
     <?php else: ?>
@@ -76,7 +71,6 @@
       </div>
       <?php endif; ?>
 
-      <!-- Meeting ID box -->
       <div class="id-box">
         <div class="id-box-label">&#128279; Meeting ID</div>
         <div class="id-value"><?= esc($meeting['meeting_uuid']) ?></div>
@@ -86,7 +80,6 @@
         $pw = $plainPassword ?? $meeting['password'] ?? '';
       ?>
       <?php if (!empty($pw)): ?>
-      <!-- Password box -->
       <div class="pw-box">
         <div class="pw-box-label">&#128274; Meeting Password</div>
         <div class="pw-value"><?= esc($pw) ?></div>
@@ -104,7 +97,7 @@
 
     <p style="font-size:13px;color:#94a3b8;">
       Or paste this link into your browser:<br>
-      <a href="<?= esc($joinLink) ?>" style="color:#00aeef;word-break:break-all;"><?= esc($joinLink) ?></a>
+      <a href="<?= esc($joinLink) ?>" style="color:#1c75bc;word-break:break-all;"><?= esc($joinLink) ?></a>
     </p>
   </div>
 
