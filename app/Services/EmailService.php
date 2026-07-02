@@ -24,6 +24,7 @@ class EmailService
             $this->mailer->Host     = env('MAIL_HOST', 'localhost');
             $this->mailer->Port     = (int) env('MAIL_PORT', 587);
             $this->mailer->SMTPAuth = true;
+            $this->mailer->AuthType = 'LOGIN'; // cPanel mail servers require LOGIN auth
             $this->mailer->Username = env('MAIL_USER', '');
             $this->mailer->Password = env('MAIL_PASS', '');
 
@@ -40,6 +41,14 @@ class EmailService
                     'allow_self_signed' => true,
                 ],
             ];
+
+            // Enable SMTP debug — set MAIL_DEBUG=true in .env to capture full SMTP log
+            if (env('MAIL_DEBUG', false)) {
+                $this->mailer->SMTPDebug  = 2;
+                $this->mailer->Debugoutput = function (string $str, int $level): void {
+                    log_message('debug', '[PHPMailer] ' . trim($str));
+                };
+            }
         }
 
         $this->mailer->setFrom(
