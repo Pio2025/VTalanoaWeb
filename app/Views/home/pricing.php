@@ -292,16 +292,16 @@
           <span class="check"><svg viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5 4.5-5"/></svg></span>
           HD video &amp; audio
         </li>
-        <li>
-          <span class="check"><svg viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5 4.5-5"/></svg></span>
+        <li class="dim">
+          <span class="cross"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6"/></svg></span>
           Screen sharing
         </li>
         <li>
           <span class="check"><svg viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5 4.5-5"/></svg></span>
           In-meeting chat
         </li>
-        <li>
-          <span class="check"><svg viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5 4.5-5"/></svg></span>
+        <li class="dim">
+          <span class="cross"><svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6"/></svg></span>
           Live captions
         </li>
         <li>
@@ -353,10 +353,6 @@
         </li>
         <li>
           <span class="check"><svg viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5 4.5-5"/></svg></span>
-          10 GB cloud storage
-        </li>
-        <li>
-          <span class="check"><svg viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5 4.5-5"/></svg></span>
           Custom meeting room URL
         </li>
         <li>
@@ -396,11 +392,7 @@
         </li>
         <li>
           <span class="check"><svg viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5 4.5-5"/></svg></span>
-          Up to <strong>1,000 participants</strong>
-        </li>
-        <li>
-          <span class="check"><svg viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5 4.5-5"/></svg></span>
-          100 GB cloud storage
+          Up to <strong>500 participants</strong>
         </li>
         <li>
           <span class="check"><svg viewBox="0 0 10 10"><path d="M1.5 5l2.5 2.5 4.5-5"/></svg></span>
