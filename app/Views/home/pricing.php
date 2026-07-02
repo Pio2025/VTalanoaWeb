@@ -241,7 +241,7 @@
 <header>
   <div class="wrap nav">
     <a class="logo" href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo.png') ?>" alt="VTalanoa" style="height:36px;max-width:180px;object-fit:contain;">
+      <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" style="height:36px;max-width:180px;object-fit:contain;">
     </a>
     <nav class="nav-links" aria-label="Main">
       <a href="<?= base_url('features') ?>">Features</a>
@@ -436,7 +436,7 @@
 <footer>
   <div class="wrap foot">
     <a class="logo" href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo.png') ?>" alt="VTalanoa" style="height:32px;max-width:160px;object-fit:contain;">
+      <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" style="height:32px;max-width:160px;object-fit:contain;">
     </a>
     <nav class="foot-links" aria-label="Footer">
       <a href="#">Privacy</a>

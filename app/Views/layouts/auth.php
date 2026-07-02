@@ -18,7 +18,7 @@
     <div class="auth-panel-brand">
         <div class="auth-panel-brand-inner">
             <a href="<?= base_url('/') ?>" class="auth-brand-link">
-                <img src="<?= base_url('img/logo-white.png') ?>" alt="VTalanoa" style="height:42px;max-width:200px;object-fit:contain;">
+                <img src="<?= base_url('img/logo-web-white.png') ?>" alt="VTalanoa" style="height:42px;max-width:200px;object-fit:contain;">
             </a>
             <div class="auth-brand-body">
                 <h2 class="auth-brand-headline">Meet anyone,<br>anywhere.</h2>
@@ -55,7 +55,7 @@
             <!-- Mobile-only logo -->
             <div class="auth-mobile-logo">
                 <a href="<?= base_url('/') ?>">
-                    <img src="<?= base_url('img/logo.png') ?>" alt="VTalanoa" style="height:36px;object-fit:contain;">
+                    <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" style="height:36px;object-fit:contain;">
                 </a>
             </div>
 

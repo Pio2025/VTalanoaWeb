@@ -16,7 +16,7 @@
     <!-- Brand -->
     <div class="join-brand">
         <a href="<?= base_url('/') ?>">
-            <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:36px;max-width:180px;object-fit:contain;">
+            <img src="<?= base_url('img/logo-web.png') ?>" alt="MeetWave" style="height:36px;max-width:180px;object-fit:contain;">
         </a>
     </div>
 

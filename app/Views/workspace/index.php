@@ -29,7 +29,7 @@
   <!-- Left icon-nav -->
   <nav class="ws-icon-nav">
     <a href="<?= base_url('dashboard') ?>" class="ws-logo-btn" title="Back to VTalanoa">
-      <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:28px;max-width:140px;object-fit:contain;">
+      <img src="<?= base_url('img/logo-web.png') ?>" alt="MeetWave" style="height:28px;max-width:140px;object-fit:contain;">
     </a>
 
     <div class="ws-nav-items">

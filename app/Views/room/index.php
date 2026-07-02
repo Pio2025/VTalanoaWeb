@@ -272,7 +272,7 @@
     <header class="room-header">
         <div class="room-header-left">
             <a href="<?= base_url('/') ?>" class="room-brand" title="Home">
-                <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" id="roomLogo" style="height:30px;max-width:130px;object-fit:contain;">
+                <img src="<?= base_url('img/logo-web.png') ?>" alt="MeetWave" id="roomLogo" style="height:30px;max-width:130px;object-fit:contain;">
             </a>
             <div class="room-title"><?= esc($meeting['title']) ?></div>
         </div>
@@ -902,12 +902,12 @@ const MEETING_DURATION_MINUTES = <?= !empty($meeting['duration_minutes']) ? (int
     var icon = document.getElementById('themeIcon');
     if (icon) icon.className = 'fa-solid fa-sun';
     var logo = document.getElementById('roomLogo');
-    if (logo) logo.src = logo.src.replace('logo.png', 'logo-white.png');
+    if (logo) logo.src = logo.src.replace('logo-web.png', 'logo-web-white.png');
   }
 })();
 
-var LOGO_LIGHT = '<?= base_url('img/logo.png') ?>';
-var LOGO_DARK  = '<?= base_url('img/logo-white.png') ?>';
+var LOGO_LIGHT = '<?= base_url('img/logo-web.png') ?>';
+var LOGO_DARK  = '<?= base_url('img/logo-web-white.png') ?>';
 
 function toggleRoomTheme() {
   var body = document.body;

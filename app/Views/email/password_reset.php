@@ -19,7 +19,7 @@
 <body>
 <div class="wrap">
   <div class="header">
-    <img src="<?= base_url('img/logo-white.png') ?>" alt="VTalanoa" width="160" style="height:auto;display:block;margin:0 auto;">
+    <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" width="160" style="height:auto;display:block;margin:0 auto;">
   </div>
   <div class="body">
     <h2>Reset Your Password</h2>
