@@ -229,7 +229,7 @@
 <div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
   <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&#x2715;</button>
   <a href="<?= base_url('/') ?>" onclick="closeMobileNav()">Home</a>
-  <a href="<?= base_url('/') ?>#features" onclick="closeMobileNav()">Features</a>
+  <a href="<?= base_url('features') ?>" onclick="closeMobileNav()">Features</a>
   <a href="<?= base_url('pricing') ?>" onclick="closeMobileNav()">Pricing</a>
   <a href="#" onclick="closeMobileNav()">Download</a>
   <a href="#" onclick="closeMobileNav()">Help</a>
@@ -244,7 +244,7 @@
       <img src="<?= base_url('img/logo.png') ?>" alt="VTalanoa" style="height:36px;max-width:180px;object-fit:contain;">
     </a>
     <nav class="nav-links" aria-label="Main">
-      <a href="<?= base_url('/') ?>#features">Features</a>
+      <a href="<?= base_url('features') ?>">Features</a>
       <a href="<?= base_url('pricing') ?>" class="active">Pricing</a>
       <a href="#">Download</a>
       <a href="#">Help</a>

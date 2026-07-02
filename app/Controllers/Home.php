@@ -13,4 +13,9 @@ class Home extends BaseController
     {
         return view('home/pricing');
     }
+
+    public function features(): string
+    {
+        return view('home/features');
+    }
 }

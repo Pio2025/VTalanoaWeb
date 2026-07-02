@@ -223,7 +223,7 @@
 <!-- Mobile nav overlay -->
 <div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
   <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&#x2715;</button>
-  <a href="#features" onclick="closeMobileNav()">Features</a>
+  <a href="<?= base_url('features') ?>" onclick="closeMobileNav()">Features</a>
   <a href="<?= base_url('pricing') ?>" onclick="closeMobileNav()">Pricing</a>
   <a href="#download" onclick="closeMobileNav()">Download</a>
   <a href="#help" onclick="closeMobileNav()">Help</a>
@@ -238,7 +238,7 @@
       <img src="<?= base_url('img/logo.png') ?>" alt="MeetWave" style="height:36px;max-width:180px;object-fit:contain;">
     </a>
     <nav class="nav-links" aria-label="Main">
-      <a href="#features">Features</a>
+      <a href="<?= base_url('features') ?>">Features</a>
       <a href="<?= base_url('pricing') ?>">Pricing</a>
       <a href="#download">Download</a>
       <a href="#help">Help</a>
