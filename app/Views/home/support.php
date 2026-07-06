@@ -97,10 +97,41 @@
   /* Footer */
   footer { border-top: 1px solid var(--line); background: var(--bg); margin-top: 80px; }
   .foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 28px 24px; max-width: 1140px; margin: 0 auto; }
-  .foot-links { display: flex; gap: 24px; }
+  .foot-links { display: flex; gap: 24px; flex-wrap: wrap; }
   .foot-links a { color: var(--muted); text-decoration: none; font-size: 13px; }
   .foot-links a:hover { color: var(--blue); }
   .copy { font-size: 13px; color: var(--muted); }
+
+  /* Hamburger & mobile nav */
+  .hamburger { display: none; background: none; border: 0; cursor: pointer; padding: 6px; border-radius: 8px; }
+  .hamburger:hover { background: #f1f5f9; }
+  .hamburger svg { width: 24px; height: 24px; display: block; fill: var(--navy); }
+  .mobile-nav { display: none; position: fixed; inset: 0; background: rgba(38,34,98,.97); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px 24px; }
+  .mobile-nav.open { display: flex; }
+  .mobile-nav a { color: #fff; font-size: 1.2rem; font-weight: 600; text-decoration: none; }
+  .mobile-nav a:hover { opacity: .8; }
+  .mobile-nav .divider { width: 60px; height: 1px; background: rgba(255,255,255,.2); }
+  .mobile-nav .btn-nav-m { background: var(--blue); padding: 12px 32px; border-radius: 10px; font-size: 1rem; }
+  .mobile-nav-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,.15); border: 0; color: #fff; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.3rem; }
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .hamburger { display: block; }
+    .cta-banner { padding: 32px 24px; margin: 48px 16px 0; }
+    .cta-banner h2 { font-size: 20px; }
+  }
+  @media (max-width: 480px) {
+    .hero { padding: 48px 20px 60px; }
+    .search-wrap input { font-size: 15px; padding: 15px 50px 15px 18px; }
+    .section { padding: 48px 16px 0; }
+    .categories { grid-template-columns: 1fr 1fr; }
+    .cta-banner { flex-direction: column; text-align: center; }
+    .cta-actions { justify-content: center; }
+    .foot { flex-direction: column; align-items: center; text-align: center; }
+    .foot-links { justify-content: center; }
+  }
+  @media (max-width: 360px) {
+    .categories { grid-template-columns: 1fr; }
+  }
 
   /* Search results */
   #searchResults { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.15); margin-top: 8px; overflow: hidden; z-index: 50; text-align: left; max-height: 360px; overflow-y: auto; }
@@ -114,6 +145,16 @@
 </style>
 </head>
 <body>
+
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+  <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&#x2715;</button>
+  <a href="<?= base_url('features') ?>">Features</a>
+  <a href="<?= base_url('pricing') ?>">Pricing</a>
+  <a href="<?= base_url('contact') ?>">Contact</a>
+  <div class="divider"></div>
+  <a href="<?= base_url('auth/login') ?>">Sign In</a>
+  <a href="<?= base_url('auth/register') ?>" class="btn-nav-m">Get Started</a>
+</div>
 
 <header>
   <div class="wrap-nav">
@@ -129,6 +170,9 @@
         <li><a href="<?= base_url('auth/register') ?>" class="btn-nav">Get Started</a></li>
       </ul>
     </nav>
+    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
+      <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+    </button>
   </div>
 </header>
 
@@ -622,5 +666,17 @@ function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replac
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 </script>
 
+<script>
+(function(){
+  const h = document.getElementById('hamburger');
+  const n = document.getElementById('mobileNav');
+  const c = document.getElementById('mobileNavClose');
+  function open(){ n.classList.add('open'); h?.setAttribute('aria-expanded','true'); document.body.style.overflow='hidden'; }
+  function close(){ n.classList.remove('open'); h?.setAttribute('aria-expanded','false'); document.body.style.overflow=''; }
+  h?.addEventListener('click', open);
+  c?.addEventListener('click', close);
+  document.addEventListener('keydown', e => e.key === 'Escape' && close());
+})();
+</script>
 </body>
 </html>

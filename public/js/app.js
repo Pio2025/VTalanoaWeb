@@ -2,9 +2,10 @@
 
 // Sidebar toggle
 (function () {
-  const sidebar  = document.getElementById('sidebar');
-  const overlay  = document.getElementById('sidebarOverlay');
-  const menuBtn  = document.getElementById('menuBtn');
+  const sidebar   = document.getElementById('sidebar');
+  const overlay   = document.getElementById('sidebarOverlay');
+  const openBtn   = document.getElementById('sidebarOpen');
+  const closeBtn  = document.getElementById('sidebarClose');
 
   function openSidebar() {
     sidebar?.classList.add('open');
@@ -17,9 +18,8 @@
     document.body.style.overflow = '';
   }
 
-  menuBtn?.addEventListener('click', () => {
-    sidebar?.classList.contains('open') ? closeSidebar() : openSidebar();
-  });
+  openBtn?.addEventListener('click', openSidebar);
+  closeBtn?.addEventListener('click', closeSidebar);
   overlay?.addEventListener('click', closeSidebar);
 })();
 
