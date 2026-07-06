@@ -7,7 +7,7 @@ let _wbDrawing   = false;
 let _wbLastX     = 0;
 let _wbLastY     = 0;
 let _wbTool      = 'pen';
-let _wbColor     = '#ffffff';
+let _wbColor     = '#000000';
 let _wbLineWidth = 3;
 let _wbStrokes   = [];
 
@@ -75,7 +75,7 @@ function _wbStart(x, y) { _wbDrawing = true; _wbLastX = x; _wbLastY = y; }
 function _wbMove(x, y) {
   const stroke = {
     x0: _wbLastX, y0: _wbLastY, x1: x, y1: y,
-    color: _wbTool === 'eraser' ? '#0f172a' : _wbColor,
+    color: _wbTool === 'eraser' ? '#ffffff' : _wbColor,
     width: _wbTool === 'eraser' ? _wbLineWidth * 6 : _wbLineWidth,
   };
   _drawStroke(stroke);
@@ -134,7 +134,7 @@ function setWbColor(color) {
   _wbColor = color;
   document.querySelectorAll('.wb-color-swatch').forEach(b => b.classList.remove('active'));
   document.querySelector(`.wb-color-swatch[data-color="${color}"]`)?.classList.add('active');
-  if (color !== '#0f172a') { _wbTool = 'pen'; setWbTool('pen'); }
+  _wbTool = 'pen'; setWbTool('pen');
 }
 
 function setWbWidth(w) {
@@ -156,6 +156,11 @@ function wbDownload() {
   link.download = `whiteboard-${MEETING_UUID.slice(0,8)}.png`;
   link.href = _wbCanvas.toDataURL();
   link.click();
+  showToast('Whiteboard saved!', 'success');
+  // On mobile, close the whiteboard so the user returns to the meeting
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    setTimeout(closeWhiteboard, 800);
+  }
 }
 
 window.addEventListener('resize', () => { if (_wbOpen) _resizeCanvas(); });

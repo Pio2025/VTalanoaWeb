@@ -34,6 +34,19 @@ const BG_W = 640, BG_H = 360;   // output / compositing canvas resolution
 const SEG_W = 256, SEG_H = 144; // segmentation input resolution (low-res)
 const SEG_BLEND = 0.75;          // temporal mask weight: 75% new, 25% previous
 
+// Cover-fit a video element into a canvas rect — prevents stretch on portrait
+// mobile cameras (where videoWidth/videoHeight may be 480×640 rather than 640×360).
+function _coverDraw(ctx, src, cW, cH) {
+  const vW = src.videoWidth  || cW;
+  const vH = src.videoHeight || cH;
+  if (!vW || !vH) { ctx.drawImage(src, 0, 0, cW, cH); return; }
+  const vAr = vW / vH, cAr = cW / cH;
+  let sx = 0, sy = 0, sw = vW, sh = vH;
+  if (vAr > cAr) { sw = sh * cAr; sx = (vW - sw) / 2; }
+  else             { sh = sw / cAr; sy = (vH - sh) / 2; }
+  ctx.drawImage(src, sx, sy, sw, sh, 0, 0, cW, cH);
+}
+
 // ── State ─────────────────────────────────────────────────────────────────────
 let _bgEffect    = 'none';  // 'none' | 'blur' | 'image'
 let _bgImage     = null;    // HTMLImageElement — virtual background
@@ -326,7 +339,7 @@ async function _bgStart() {
     // _rawVid always reads localStream directly — never the output canvas.
     // Upscaling the small mask with blur(3px) feathers the person silhouette.
     personCtx.clearRect(0, 0, BG_W, BG_H);
-    personCtx.drawImage(_rawVid, 0, 0, BG_W, BG_H);        // full-res raw camera
+    _coverDraw(personCtx, _rawVid, BG_W, BG_H);             // full-res raw camera (cover-fit)
     personCtx.globalCompositeOperation = 'destination-in';
     personCtx.filter = 'blur(3px)';                         // feather edges on upscale
     personCtx.drawImage(_maskCanvas, 0, 0, BG_W, BG_H);    // 256×144 → 640×360 upscale
@@ -336,7 +349,7 @@ async function _bgStart() {
     // ── 3. BACKGROUND LAYER ───────────────────────────────────────────────
     if (_bgEffect === 'blur') {
       outCtx.filter = 'blur(18px)';
-      outCtx.drawImage(_rawVid, 0, 0, BG_W, BG_H);         // full-res raw camera, blurred
+      _coverDraw(outCtx, _rawVid, BG_W, BG_H);             // full-res raw camera, blurred
       outCtx.filter = 'none';
     } else if (_bgEffect === 'image' && _bgImage) {
       // Cover-fit the user's background image
@@ -347,7 +360,7 @@ async function _bgStart() {
       else            { sh = sw / cAr; sy = (_bgImage.naturalHeight - sh) / 2; }
       outCtx.drawImage(_bgImage, sx, sy, sw, sh, 0, 0, BG_W, BG_H);
     } else {
-      outCtx.drawImage(_rawVid, 0, 0, BG_W, BG_H);
+      _coverDraw(outCtx, _rawVid, BG_W, BG_H);
     }
 
     // ── 4. COMPOSITE PERSON ON BACKGROUND ─────────────────────────────────
@@ -365,9 +378,9 @@ async function _bgStart() {
 
     if (!segBusy && _rawVid.videoWidth > 0) {
       segBusy = true;
-      // Downscale raw camera to 256×144 for the segmenter.
+      // Downscale raw camera to 256×144 for the segmenter (cover-fit to avoid stretch).
       // Always read from _rawVid — never localVid (which shows the output).
-      segCtx.drawImage(_rawVid, 0, 0, SEG_W, SEG_H);
+      _coverDraw(segCtx, _rawVid, SEG_W, SEG_H);
 
       seg.send({ image: segCanvas }).catch(err => {
         console.warn('[BG] send error:', err);
@@ -460,7 +473,7 @@ function _startTouchUpPipeline() {
     if (!_touchUpRunning) return;
     if (_touchUpRawVid && _touchUpRawVid.videoWidth > 0) {
       ctx.filter = 'brightness(1.03) contrast(0.95) saturate(0.93)';
-      ctx.drawImage(_touchUpRawVid, 0, 0, BG_W, BG_H);
+      _coverDraw(ctx, _touchUpRawVid, BG_W, BG_H);
       ctx.filter = 'none';
     }
     _touchUpAnimId = requestAnimationFrame(tick);

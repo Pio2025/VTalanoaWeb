@@ -286,7 +286,7 @@
 .poll-notif-btn:hover { background: var(--rm-primary-bg); border-color: var(--rm-primary-b); }
 </style>
 </head>
-<body class="room-body">
+<body class="room-body<?= $user['user_id'] != $meeting['host_user_id'] ? ' not-host' : '' ?>">
 
 <!-- Reconnect banner (shown when socket drops; hidden on reconnect) -->
 <div id="reconnectBanner" class="reconnect-banner">
@@ -897,10 +897,10 @@
         </div>
         <div class="wb-colors">
             <?php
-            $wbColors = ['#ffffff','#ef4444','#f97316','#eab308','#22c55e','#00aeef','#8b5cf6','#ec4899','#000000'];
+            $wbColors = ['#000000','#ef4444','#f97316','#eab308','#22c55e','#00aeef','#8b5cf6','#ec4899','#6b7280'];
             foreach ($wbColors as $c):
             ?>
-            <button class="wb-color-swatch<?= $c === '#ffffff' ? ' active' : '' ?>"
+            <button class="wb-color-swatch<?= $c === '#000000' ? ' active' : '' ?>"
                     data-color="<?= $c ?>"
                     style="background:<?= $c ?>;"
                     onclick="setWbColor('<?= $c ?>')" title="<?= $c ?>"></button>
@@ -1071,6 +1071,21 @@ function toggleRoomTheme() {
   });
 })();
 </script>
+<!-- Image Lightbox — in-page viewer keeps WebRTC alive on mobile -->
+<div id="imgLightbox" style="display:none;position:fixed;inset:0;z-index:9000;
+     background:rgba(0,0,0,.92);align-items:center;justify-content:center;flex-direction:column;"
+     onclick="if(event.target===this)closeImgLightbox()">
+  <button onclick="closeImgLightbox()" style="position:absolute;top:16px;right:16px;
+      background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:50%;
+      width:40px;height:40px;font-size:18px;cursor:pointer;display:flex;
+      align-items:center;justify-content:center;z-index:1;">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+  <img id="imgLightboxImg" src="" alt=""
+       style="max-width:94vw;max-height:88vh;object-fit:contain;border-radius:8px;
+              touch-action:pinch-zoom;">
+</div>
+
 <script src="<?= base_url('js/app.js') ?>"></script>
 <script src="<?= base_url('js/sounds.js') ?>"></script>
 <script src="<?= base_url('js/socket.js') ?>"></script>

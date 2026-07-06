@@ -932,6 +932,8 @@ function sendChat() {
   emitSafe('chat-message', { message: msg });
   appendChatMessage(null, DISPLAY_NAME + ' (You)', msg, new Date().toISOString(), true);
   input.value = '';
+  // Dismiss virtual keyboard on mobile so iOS doesn't stay zoomed in after send
+  if (window.matchMedia('(max-width: 768px)').matches) input.blur();
 }
 
 function chatKeydown(e) {
@@ -1057,7 +1059,7 @@ function buildFileHtml(file) {
   const isImage = file.type?.startsWith('image/');
   if (isImage) {
     return `<img src="${file.url}" class="chat-img-preview"
-              onclick="window.open(this.src,'_blank')" alt="${escapeHtml(file.name)}">`;
+              onclick="openImgLightbox(this.src)" alt="${escapeHtml(file.name)}">`;
   }
 
   const iconMap = {
@@ -1112,6 +1114,24 @@ function linkifyText(str) {
     return escapeHtml(part);
   }).join('');
 }
+
+/* ── Image Lightbox — keeps meeting connected on mobile ────── */
+function openImgLightbox(src) {
+  const lb = document.getElementById('imgLightbox');
+  const img = document.getElementById('imgLightboxImg');
+  if (!lb || !img) { window.open(src, '_blank'); return; }
+  img.src = src;
+  lb.style.display = 'flex';
+  document.addEventListener('keydown', _lbKeyClose);
+}
+
+function closeImgLightbox() {
+  const lb = document.getElementById('imgLightbox');
+  if (lb) lb.style.display = 'none';
+  document.removeEventListener('keydown', _lbKeyClose);
+}
+
+function _lbKeyClose(e) { if (e.key === 'Escape') closeImgLightbox(); }
 
 /* ── Waiting Room ──────────────────────────────────────────── */
 function renderWaitingList(waiting) {
