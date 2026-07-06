@@ -179,7 +179,8 @@
   .room-header { padding: 6px 12px; flex-shrink: 0; }
   .room-title  { display: none; }
   .room-main   { flex: 1 !important; min-height: 0 !important; overflow: hidden; display: flex; }
-  .video-area  { flex: 1; width: 100%; min-height: 0; }
+  .video-area  { flex: 1; width: 100%; min-height: 0; flex-direction: column; }
+  .host-pane   { height: 42vh; flex-shrink: 0; }
   .video-grid .video-tile { min-width: 0 !important; min-height: 0 !important; }
   .room-panels { position: fixed !important; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; z-index: 500; display: block; }
   .room-panels.panel-is-open { pointer-events: auto; }
@@ -364,16 +365,20 @@
     <!-- Main Content -->
     <div class="room-main">
 
-        <!-- Video Grid -->
+        <!-- Video Area: host pane (left/top 50%) + participants pane (right/bottom 50%) -->
         <div class="video-area" id="videoArea">
-            <div class="video-grid" id="videoGrid">
-                <!-- Local video tile (click to spotlight) -->
-                <div class="video-tile local-tile" id="localTile" onclick="focusTile('local')" style="cursor:pointer" title="Click to focus">
+
+            <!-- Host pane — shows the host's video, occupies 50% of the screen -->
+            <div class="host-pane">
+                <div class="video-tile" id="localTile" onclick="focusTile('local')" style="cursor:pointer" title="Click to focus">
                     <video id="localVideo" autoplay muted playsinline></video>
                     <div class="tile-overlay">
                         <div class="tile-name">
                             <?= esc($user['fname'] . ' ' . $user['lname']) ?>
                             <span class="badge-you">You</span>
+                            <?php if ($user['user_id'] == $meeting['host_user_id']): ?>
+                            <span class="badge-host">Host</span>
+                            <?php endif; ?>
                         </div>
                         <div class="tile-indicators">
                             <span class="tile-indicator" id="localMicIndicator" title="Mic muted">
@@ -390,6 +395,17 @@
                         </div>
                         <?php endif; ?>
                     </div>
+                </div>
+            </div>
+
+            <!-- Participants pane — 4-column grid for all remote participants -->
+            <div class="participants-pane">
+                <div class="video-grid" id="videoGrid">
+                    <!-- Remote tiles injected here by JS -->
+                </div>
+                <div class="participants-empty" id="participantsEmpty">
+                    <i class="fa-solid fa-users"></i>
+                    <p>Waiting for participants to join…</p>
                 </div>
             </div>
 

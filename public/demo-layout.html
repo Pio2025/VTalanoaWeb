@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Room Layout Demo — 100 Participants</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── Design tokens ── */
+:root{
+  --bg:        #0f172a;
+  --surface:   #1e293b;
+  --surface2:  #263348;
+  --border:    rgba(255,255,255,.08);
+  --primary:   #1c75bc;
+  --primary-bg:rgba(28,117,188,.15);
+  --text:      #ffffff;
+  --text-2:    rgba(255,255,255,.65);
+  --text-3:    rgba(255,255,255,.3);
+  --tile-bg:   #1e293b;
+  --btn:       rgba(255,255,255,.08);
+  --btn-h:     rgba(255,255,255,.16);
+}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  height:100vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── Header ── */
+.rm-header{
+  height:56px;flex-shrink:0;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 20px;gap:12px;
+}
+.rm-brand{
+  display:flex;align-items:center;gap:8px;
+  font-size:15px;font-weight:800;color:var(--text);
+  text-decoration:none;font-variant-numeric:tabular-nums;
+}
+.rm-brand-mark{
+  width:28px;height:28px;border-radius:8px;
+  background:#fff;position:relative;overflow:hidden;display:inline-block;
+}
+.rm-brand-mark::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 46%,var(--primary) 46%);
+}
+.rm-title{
+  font-size:13px;font-weight:600;color:var(--text-2);
+  margin-left:4px;
+}
+.rm-timer{
+  font-size:15px;font-weight:600;color:var(--text-2);
+  font-variant-numeric:tabular-nums;letter-spacing:.5px;
+  background:var(--btn);padding:4px 12px;border-radius:6px;
+}
+.rm-center{display:flex;align-items:center;gap:6px;flex:0 0 auto;}
+.rm-left  {display:flex;align-items:center;gap:12px;flex:1 1 0;min-width:0;}
+.rm-right {display:flex;align-items:center;gap:10px;flex:1 1 0;min-width:0;justify-content:flex-end;}
+
+.demo-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:3px 10px;border-radius:20px;
+  background:rgba(234,179,8,.15);border:1px solid rgba(234,179,8,.4);
+  color:#eab308;font-size:11px;font-weight:700;
+}
+.net-pill{
+  display:flex;align-items:center;gap:5px;
+  padding:2px 9px;border-radius:20px;margin-left:8px;
+  font-size:11px;font-weight:600;white-space:nowrap;
+  background:rgba(34,197,94,.15);color:#22c55e;
+}
+.net-dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+.pcount{
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--text-2);font-weight:500;
+}
+.pcount i{font-size:12px;color:var(--primary);}
+
+/* ── Room main ── */
+.rm-main{
+  flex:1;display:flex;overflow:hidden;position:relative;
+}
+
+/* ── Video area: split layout ── */
+.video-area{
+  flex:1;overflow:hidden;
+  display:flex;flex-direction:row;
+  background:var(--bg);
+}
+
+/* ── Host pane (50% left) ── */
+.host-pane{
+  width:50%;flex-shrink:0;
+  padding:8px;
+  border-right:1px solid var(--border);
+  display:flex;align-items:stretch;
+}
+.host-tile{
+  flex:1;min-height:0;border-radius:12px;
+  background:linear-gradient(135deg,#1a2036,#1e3a5f);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.host-avatar{
+  width:96px;height:96px;border-radius:50%;
+  background:var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;font-weight:800;color:#fff;
+  box-shadow:0 0 0 4px rgba(28,117,188,.3);
+}
+.host-overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:12px;
+  background:linear-gradient(transparent 55%,rgba(0,0,0,.7));
+}
+.host-name{
+  display:flex;align-items:center;gap:6px;
+  font-size:14px;font-weight:700;color:#fff;
+}
+.badge-you{
+  background:var(--primary);color:#fff;
+  font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;
+}
+.badge-host{
+  background:#7c3aed;color:#fff;
+  font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;
+}
+.host-label{
+  font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;font-weight:500;
+}
+
+/* ── Participants pane (50% right) ── */
+.participants-pane{
+  flex:1;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.pane-header{
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 12px;
+  border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.02);
+}
+.pane-label{
+  font-size:11px;font-weight:700;color:var(--text-3);
+  text-transform:uppercase;letter-spacing:.05em;
+}
+.pane-count{
+  font-size:11px;font-weight:600;color:var(--primary);
+  background:var(--primary-bg);padding:2px 8px;border-radius:10px;
+}
+
+/* ── Participant grid ── */
+.video-grid{
+  flex:1;overflow-y:auto;
+  display:grid;
+  gap:5px;
+  padding:6px;
+  grid-template-columns:repeat(4,1fr);
+  grid-auto-rows:minmax(100px,16vh);
+  align-content:start;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.15) transparent;
+}
+.video-grid::-webkit-scrollbar{width:4px;}
+.video-grid::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px;}
+
+/* ── Participant tile ── */
+.ptile{
+  border-radius:9px;overflow:hidden;position:relative;
+  background:var(--tile-bg);
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid transparent;
+  transition:border-color .15s,transform .1s;
+  cursor:pointer;
+}
+.ptile:hover{border-color:rgba(28,117,188,.5);transform:scale(1.02);}
+.ptile-avatar{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;color:#fff;
+  flex-shrink:0;
+}
+.ptile-overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:7px;
+  background:linear-gradient(transparent 45%,rgba(0,0,0,.65));
+}
+.ptile-name{
+  font-size:10px;font-weight:600;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ptile-mic{
+  position:absolute;top:5px;right:5px;
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(239,68,68,.8);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:#fff;
+}
+
+/* ── Control bar ── */
+.control-bar{
+  height:76px;flex-shrink:0;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  padding:0 24px;gap:10px;
+}
+.ctrl-btn{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:var(--btn);border:none;color:var(--text);
+  padding:8px 14px;border-radius:10px;cursor:pointer;font-size:18px;
+  transition:background .15s;min-width:56px;
+}
+.ctrl-btn:hover{background:var(--btn-h);}
+.ctrl-btn.off{background:rgba(239,68,68,.12);color:#ef4444;}
+.ctrl-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);}
+.ctrl-btn.off .ctrl-label{color:#ef4444;}
+.ctrl-end{background:#ef4444!important;color:#fff!important;padding:8px 22px!important;}
+.ctrl-end:hover{background:#dc2626!important;}
+.ctrl-end .ctrl-label{color:rgba(255,255,255,.8)!important;}
+.ctrl-sep{width:1px;height:40px;background:var(--border);margin:0 4px;}
+
+/* ── Responsive: mobile stacks vertically ── */
+@media(max-width:768px){
+  .video-area{flex-direction:column;}
+  .host-pane{width:100%;height:42vh;flex-shrink:0;border-right:none;border-bottom:1px solid var(--border);}
+  .video-grid{grid-template-columns:repeat(2,1fr);}
+  .rm-title{display:none;}
+  .ctrl-label{display:none;}
+  .ctrl-btn{padding:7px 10px;min-width:44px;font-size:16px;}
+}
+@media(max-width:480px){
+  .video-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:minmax(80px,12vh);}
+  .ptile-avatar{width:36px;height:36px;font-size:13px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="rm-header">
+  <div class="rm-left">
+    <a href="/" class="rm-brand" title="Home">
+      <span class="rm-brand-mark"></span>
+      <span>VTalanoa</span>
+    </a>
+    <div class="rm-title">Weekly All-Hands Meeting</div>
+    <div class="demo-badge"><i class="fa-solid fa-flask"></i> Demo Mode</div>
+  </div>
+  <div class="rm-center">
+    <div class="rm-timer" id="timerEl">00:00</div>
+    <div class="net-pill"><span class="net-dot"></span>Good</div>
+  </div>
+  <div class="rm-right">
+    <div class="pcount">
+      <i class="fa-solid fa-users"></i>
+      <span id="totalCount">101</span>
+    </div>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="rm-main">
+  <div class="video-area">
+
+    <!-- Host pane -->
+    <div class="host-pane">
+      <div class="host-tile">
+        <div class="host-avatar">JD</div>
+        <div class="host-overlay">
+          <div class="host-name">
+            John Doe
+            <span class="badge-you">You</span>
+            <span class="badge-host">Host</span>
+          </div>
+          <div class="host-label">Camera &amp; Microphone active</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Participants pane -->
+    <div class="participants-pane">
+      <div class="pane-header">
+        <span class="pane-label">Participants</span>
+        <span class="pane-count" id="partCount">100 in call</span>
+      </div>
+      <div class="video-grid" id="videoGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Control bar -->
+<footer class="control-bar">
+  <button class="ctrl-btn off" onclick="this.classList.toggle('off')">
+    <i class="fa-solid fa-microphone-slash"></i>
+    <span class="ctrl-label">Mic</span>
+  </button>
+  <button class="ctrl-btn" onclick="this.classList.toggle('off')">
+    <i class="fa-solid fa-video"></i>
+    <span class="ctrl-label">Camera</span>
+  </button>
+  <button class="ctrl-btn">
+    <i class="fa-solid fa-display"></i>
+    <span class="ctrl-label">Share</span>
+  </button>
+  <button class="ctrl-btn">
+    <i class="fa-solid fa-hand"></i>
+    <span class="ctrl-label">Hand</span>
+  </button>
+  <div class="ctrl-sep"></div>
+  <button class="ctrl-btn">
+    <i class="fa-solid fa-comment-dots"></i>
+    <span class="ctrl-label">Chat</span>
+  </button>
+  <button class="ctrl-btn">
+    <i class="fa-solid fa-users"></i>
+    <span class="ctrl-label">People</span>
+  </button>
+  <div class="ctrl-sep"></div>
+  <button class="ctrl-btn ctrl-end">
+    <i class="fa-solid fa-phone-slash"></i>
+    <span class="ctrl-label">End</span>
+  </button>
+</footer>
+
+<script>
+const PARTICIPANTS = [
+  ['James','Smith'],['Mary','Johnson'],['John','Williams'],['Patricia','Jones'],
+  ['Robert','Brown'],['Jennifer','Davis'],['Michael','Miller'],['Linda','Wilson'],
+  ['William','Moore'],['Elizabeth','Taylor'],['David','Anderson'],['Barbara','Thomas'],
+  ['Richard','Jackson'],['Susan','White'],['Joseph','Harris'],['Jessica','Martin'],
+  ['Thomas','Garcia'],['Sarah','Martinez'],['Charles','Robinson'],['Karen','Clark'],
+  ['Christopher','Rodriguez'],['Lisa','Lewis'],['Daniel','Lee'],['Nancy','Walker'],
+  ['Matthew','Hall'],['Betty','Allen'],['Anthony','Young'],['Margaret','Hernandez'],
+  ['Donald','King'],['Dorothy','Wright'],['Mark','Lopez'],['Sandra','Hill'],
+  ['Paul','Scott'],['Ashley','Green'],['Steven','Adams'],['Kimberly','Baker'],
+  ['Andrew','Gonzalez'],['Emily','Nelson'],['Kenneth','Carter'],['Donna','Mitchell'],
+  ['George','Perez'],['Carol','Roberts'],['Joshua','Turner'],['Michelle','Phillips'],
+  ['Kevin','Campbell'],['Amanda','Parker'],['Brian','Evans'],['Melissa','Edwards'],
+  ['Edward','Collins'],['Deborah','Stewart'],['Ronald','Sanchez'],['Stephanie','Morris'],
+  ['Timothy','Rogers'],['Sharon','Reed'],['Jason','Cook'],['Cynthia','Morgan'],
+  ['Jeffrey','Bell'],['Amy','Murphy'],['Ryan','Bailey'],['Angela','Rivera'],
+  ['Jacob','Cooper'],['Kathleen','Richardson'],['Gary','Cox'],['Shirley','Howard'],
+  ['Nicholas','Ward'],['Teresa','Torres'],['Eric','Peterson'],['Joyce','Gray'],
+  ['Stephen','Ramirez'],['Evelyn','James'],['Larry','Watson'],['Judith','Brooks'],
+  ['Justin','Kelly'],['Cheryl','Sanders'],['Terry','Price'],['Megan','Bennett'],
+  ['Sean','Wood'],['Denise','Barnes'],['Albert','Ross'],['Rachel','Henderson'],
+  ['Brandon','Coleman'],['Carolyn','Jenkins'],['Adam','Perry'],['Janet','Powell'],
+  ['Gregory','Long'],['Virginia','Patterson'],['Frank','Hughes'],['Catherine','Flores'],
+  ['Raymond','Washington'],['Samantha','Butler'],['Jack','Simmons'],['Diane','Foster'],
+  ['Dennis','Gonzales'],['Julie','Bryant'],['Walter','Alexander'],['Heather','Russell'],
+  ['Arthur','Griffin'],['Gloria','Diaz'],['Harold','Hayes'],['Doris','Myers'],
+];
+
+// Palette for avatar backgrounds — varied, readable on dark
+const PALETTES = [
+  '#1c75bc','#7c3aed','#0e7490','#b45309','#16a34a',
+  '#dc2626','#d97706','#0284c7','#9333ea','#059669',
+  '#c2410c','#1d4ed8','#6d28d9','#15803d','#b91c1c',
+];
+
+// Randomly mute ~30% of participants for realism
+const grid = document.getElementById('videoGrid');
+
+PARTICIPANTS.forEach(([fname, lname], i) => {
+  const initials = fname[0] + lname[0];
+  const color    = PALETTES[i % PALETTES.length];
+  const isMuted  = Math.random() < 0.3;
+  const isCamOff = Math.random() < 0.2;
+
+  const tile = document.createElement('div');
+  tile.className = 'ptile';
+
+  // Gradient tile background — slight variation
+  const hShift = (i * 17) % 40 - 20;
+  tile.style.background = isCamOff
+    ? `linear-gradient(135deg,#1a2036,#263348)`
+    : `linear-gradient(135deg,#1e293b,#1a3050)`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'ptile-avatar';
+  avatar.style.background = color;
+  avatar.textContent = initials;
+  // Show avatar only when cam is off
+  avatar.style.display = isCamOff ? 'flex' : 'none';
+
+  // Simulated "video active" indicator when cam is on
+  let videoEl = null;
+  if (!isCamOff) {
+    // Solid colored rectangle to represent an active video frame
+    videoEl = document.createElement('div');
+    videoEl.style.cssText = `
+      position:absolute;inset:0;
+      background:linear-gradient(135deg,${color}22,${color}08);
+      display:flex;align-items:center;justify-content:center;
+    `;
+    const av2 = document.createElement('div');
+    av2.className = 'ptile-avatar';
+    av2.style.cssText = `background:${color};width:44px;height:44px;font-size:16px;opacity:.7;`;
+    av2.textContent = initials;
+    videoEl.appendChild(av2);
+    tile.appendChild(videoEl);
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'ptile-overlay';
+  overlay.innerHTML = `<div class="ptile-name">${fname} ${lname}</div>`;
+
+  if (isMuted) {
+    const mic = document.createElement('div');
+    mic.className = 'ptile-mic';
+    mic.innerHTML = '<i class="fa-solid fa-microphone-slash" style="font-size:8px"></i>';
+    tile.appendChild(mic);
+  }
+
+  tile.appendChild(avatar);
+  tile.appendChild(overlay);
+  grid.appendChild(tile);
+});
+
+// Live timer
+let secs = 0;
+setInterval(() => {
+  secs++;
+  const m = String(Math.floor(secs / 60)).padStart(2, '0');
+  const s = String(secs % 60).padStart(2, '0');
+  document.getElementById('timerEl').textContent = `${m}:${s}`;
+}, 1000);
+</script>
+</body>
+</html>

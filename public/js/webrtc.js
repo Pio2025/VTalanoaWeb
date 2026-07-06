@@ -770,44 +770,27 @@ function updateGridLayout() {
   const grid = document.getElementById('videoGrid');
   if (!grid) return;
 
+  // Only count remote tiles — local tile is now in the host pane
   const n = grid.querySelectorAll('.video-tile:not(.overflow-tile)').length;
   const w = window.innerWidth;
-  let cols;
 
-  if (w <= 767) {
-    // Mobile: ≤2 tiles → single column (each tile fills full width, stacked vertically)
-    //         3+ tiles  → 2 columns
-    cols = n <= 2 ? 1 : 2;
-  } else if (w <= 1024) {
-    cols = n <= 2 ? 1 : Math.min(getOptimalCols(n), 3);
-  } else {
-    cols = getOptimalCols(n);
-  }
+  // Participants pane: fixed 4 cols on desktop, 2 cols on mobile
+  const cols = w <= 767 ? (n <= 1 ? 1 : 2) : 4;
 
   grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-  if (n > 25) {
+
+  // Scroll when more than 4×4 = 16 participants
+  if (n > 16) {
     grid.classList.add('scrollable');
-    grid.style.gridAutoRows = '';
+    grid.style.gridAutoRows = 'minmax(120px, 16vh)';
   } else {
     grid.classList.remove('scrollable');
     grid.style.gridAutoRows = '1fr';
   }
-}
 
-function getOptimalCols(n) {
-  if (n <= 1)  return 1;
-  if (n <= 2)  return 2;
-  if (n <= 4)  return 2;
-  if (n <= 6)  return 3;
-  if (n <= 9)  return 3;
-  if (n <= 12) return 4;
-  if (n <= 16) return 4;
-  if (n <= 20) return 5;
-  if (n <= 25) return 5;
-  if (n <= 36) return 6;
-  if (n <= 49) return 7;
-  if (n <= 64) return 8;
-  return 9;
+  // Show empty state when no remote participants
+  const emptyEl = document.getElementById('participantsEmpty');
+  if (emptyEl) emptyEl.classList.toggle('visible', n === 0);
 }
 
 /* ── Spotlight / Focus mode ──────────────────────────────── */

@@ -170,11 +170,43 @@
   flex: 1; display: flex; overflow: hidden; position: relative;
 }
 
-/* ── Video Area ───────────────────────────────────────────── */
+/* ── Video Area — split: host (left) + participants (right) ── */
 .video-area {
   flex: 1; position: relative; overflow: hidden;
   background: var(--rm-bg-solid);
+  display: flex; flex-direction: row;
 }
+
+/* ── Host Pane — 50% left, shows the host's video ─────────── */
+.host-pane {
+  width: 50%; flex-shrink: 0;
+  position: relative;
+  padding: 8px; box-sizing: border-box;
+  border-right: 1px solid var(--rm-border);
+  display: flex; align-items: stretch;
+}
+.host-pane > .video-tile {
+  flex: 1; min-height: 0;
+  border-radius: 12px;
+}
+
+/* ── Participants Pane — 50% right, 4-col scrollable grid ──── */
+.participants-pane {
+  flex: 1; position: relative;
+  overflow: hidden; min-width: 0;
+}
+
+/* Empty state when no remote participants have joined */
+.participants-empty {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  pointer-events: none; opacity: 0;
+  transition: opacity .35s;
+}
+.participants-empty.visible { opacity: 1; }
+.participants-empty i   { font-size: 40px; color: var(--rm-text-3); }
+.participants-empty p   { margin: 0; font-size: 13px; font-weight: 500; color: var(--rm-text-3); }
 
 /* ── Video Grid ───────────────────────────────────────────── */
 .video-grid {
@@ -184,7 +216,7 @@
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
+  grid-template-columns: repeat(4, 1fr);
   grid-auto-rows: 1fr;
   align-content: stretch;
   overflow: hidden;
@@ -192,7 +224,7 @@
 .video-grid.scrollable {
   overflow-y: auto;
   align-content: start;
-  grid-auto-rows: minmax(140px, 18vh);
+  grid-auto-rows: minmax(120px, 16vh);
 }
 
 /* ── Video Tile ───────────────────────────────────────────── */
@@ -864,6 +896,13 @@
   .room-panel  { width: 100%; }
   #settingsModal .modal-dialog { margin: 0; max-width: 100%; min-height: 100%; }
   #settingsModal .modal-content { border-radius: 0; min-height: 100dvh; }
+
+  /* Split layout: stack host above participants on mobile */
+  .video-area  { flex-direction: column; }
+  .host-pane   { width: 100%; height: 42vh; flex-shrink: 0; border-right: none; border-bottom: 1px solid var(--rm-border); padding: 6px; }
+  .host-pane > .video-tile { border-radius: 8px; }
+  .participants-pane { flex: 1; }
+  .video-grid  { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ── Responsive — Small phones (≤480px) ──────────────────── */
