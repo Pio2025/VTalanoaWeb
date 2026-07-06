@@ -56,6 +56,44 @@ let _touchUpStream  = null;
 let _touchUpAnimId  = null;
 let _touchUpRunning = false;
 
+// ── Built-in background gallery ───────────────────────────────────────────────
+// Each entry is [colorStop0, colorStop1] for a 135° diagonal gradient.
+const _BUILTIN_BGS = [
+  ['#1a2980', '#26d0ce'],  // Ocean
+  ['#134e5e', '#71b280'],  // Forest
+  ['#f093fb', '#f5576c'],  // Sunset
+  ['#0f0c29', '#302b63'],  // Galaxy
+  ['#ff6b6b', '#ffa726'],  // Coral
+  ['#00b09b', '#96c93d'],  // Aurora
+  ['#141e30', '#243b55'],  // Royal Navy
+  ['#4b6cb7', '#182848'],  // Dusk
+];
+let _builtinBgImages = null;  // lazily rendered on first use
+
+function _ensureBuiltinBgs() {
+  if (_builtinBgImages) return;
+  _builtinBgImages = _BUILTIN_BGS.map(([a, b]) => {
+    const c = document.createElement('canvas');
+    c.width = 640; c.height = 360;
+    const ctx = c.getContext('2d');
+    const g = ctx.createLinearGradient(0, 0, 640, 360);
+    g.addColorStop(0, a); g.addColorStop(1, b);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 640, 360);
+    const img = new Image();
+    img.src = c.toDataURL('image/jpeg', 0.9);
+    return img;
+  });
+}
+
+function selectBuiltinBg(idx) {
+  _ensureBuiltinBgs();
+  document.querySelectorAll('.bg-thumb').forEach((el, i) =>
+    el.classList.toggle('active', i === idx));
+  _bgImage = _builtinBgImages[idx];
+  applyBgEffect('image');
+}
+
 // ── Pre-warm (called from webrtc.js after initLocalStream resolves) ───────────
 //
 // Loads and initialises the segmentation model in the background so that
@@ -226,9 +264,11 @@ async function _bgStart() {
   _maskCanvas = document.createElement('canvas');
   _maskCanvas.width = SEG_W; _maskCanvas.height = SEG_H;
   _maskCtx = _maskCanvas.getContext('2d');
-  // Prime the mask white (full person visible) so the first blend looks clean
-  _maskCtx.fillStyle = '#fff';
-  _maskCtx.fillRect(0, 0, SEG_W, SEG_H);
+  // Start transparent (alpha=0 everywhere). MediaPipe stores the mask in the
+  // alpha channel (person=opaque, background=transparent). If we primed with
+  // white (alpha=255), background pixels would also have alpha=255 and
+  // destination-in would never cut them out.
+  _maskCtx.clearRect(0, 0, SEG_W, SEG_H);
 
   // Person canvas: full-res camera frame, cut out by the blended+feathered mask
   const personCanvas = document.createElement('canvas');

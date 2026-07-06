@@ -105,6 +105,20 @@
 .settings-bg-btn.active, .settings-bg-btn:hover {
   border-color: var(--rm-primary); color: var(--rm-text); background: var(--rm-primary-bg);
 }
+/* ── Virtual background gallery ─────────────────────────── */
+.bg-gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.bg-thumb {
+  height: 52px; border-radius: 8px; cursor: pointer; position: relative;
+  border: 2px solid transparent; transition: border-color .15s, transform .12s;
+}
+.bg-thumb:hover { border-color: var(--rm-primary); transform: scale(1.04); }
+.bg-thumb.active { border-color: var(--rm-primary); box-shadow: 0 0 0 2px var(--rm-primary-bg); }
+.bg-thumb-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  font-size: 9px; font-weight: 600; color: #fff; text-align: center;
+  padding: 2px 0 3px; background: rgba(0,0,0,.45);
+  border-radius: 0 0 6px 6px; letter-spacing: .3px;
+}
 .settings-hint { font-size: 10px; color: var(--rm-text-3); font-weight: 400; margin-left: auto; white-space: nowrap; }
 
 /* ── Spotlight / focus overlay — always dark (video context) */
@@ -548,18 +562,38 @@
                                 <i class="fa-solid fa-circle-half-stroke"></i>
                                 <span>Blur BG</span>
                             </button>
-                            <button class="settings-bg-btn" id="bgImage" onclick="applyBgEffect('image')" title="Virtual background">
+                            <button class="settings-bg-btn" id="bgImage" onclick="selectBuiltinBg(0)" title="Virtual background">
                                 <i class="fa-solid fa-image"></i>
                                 <span>Virtual BG</span>
                             </button>
                         </div>
-                        <div id="bgImagePicker" style="display:none;margin-top:10px;">
-                            <small class="text-muted d-block mb-2">Upload a background image (JPG or PNG):</small>
-                            <input type="file" id="bgFileInput" accept="image/jpeg,image/png,image/webp" style="display:none"
-                                   onchange="loadCustomBg(this)">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('bgFileInput').click()">
-                                <i class="fa-solid fa-upload me-1"></i>Upload Image
-                            </button>
+                        <div id="bgImagePicker" style="display:none;">
+                            <div class="bg-gallery">
+                                <div class="bg-thumb active" style="background:linear-gradient(135deg,#1a2980,#26d0ce)" onclick="selectBuiltinBg(0)">
+                                    <span class="bg-thumb-label">Ocean</span>
+                                </div>
+                                <div class="bg-thumb" style="background:linear-gradient(135deg,#134e5e,#71b280)" onclick="selectBuiltinBg(1)">
+                                    <span class="bg-thumb-label">Forest</span>
+                                </div>
+                                <div class="bg-thumb" style="background:linear-gradient(135deg,#f093fb,#f5576c)" onclick="selectBuiltinBg(2)">
+                                    <span class="bg-thumb-label">Sunset</span>
+                                </div>
+                                <div class="bg-thumb" style="background:linear-gradient(135deg,#0f0c29,#302b63)" onclick="selectBuiltinBg(3)">
+                                    <span class="bg-thumb-label">Galaxy</span>
+                                </div>
+                                <div class="bg-thumb" style="background:linear-gradient(135deg,#ff6b6b,#ffa726)" onclick="selectBuiltinBg(4)">
+                                    <span class="bg-thumb-label">Coral</span>
+                                </div>
+                                <div class="bg-thumb" style="background:linear-gradient(135deg,#00b09b,#96c93d)" onclick="selectBuiltinBg(5)">
+                                    <span class="bg-thumb-label">Aurora</span>
+                                </div>
+                                <div class="bg-thumb" style="background:linear-gradient(135deg,#141e30,#243b55)" onclick="selectBuiltinBg(6)">
+                                    <span class="bg-thumb-label">Royal</span>
+                                </div>
+                                <div class="bg-thumb" style="background:linear-gradient(135deg,#4b6cb7,#182848)" onclick="selectBuiltinBg(7)">
+                                    <span class="bg-thumb-label">Dusk</span>
+                                </div>
+                            </div>
                         </div>
                         <small class="text-muted d-block mt-2" style="font-size:10px;">
                             Background effects use AI processing — first load may take a few seconds.
