@@ -57,10 +57,11 @@ let _prevMaskCanvas  = null;
 let _prevMaskCtx     = null;
 
 // Touch-up pipeline (active when BG effect is 'none')
-let _touchUpEnabled = false;
-let _touchUpStream  = null;
-let _touchUpAnimId  = null;
-let _touchUpRunning = false;
+let _touchUpEnabled  = false;
+let _touchUpStream   = null;
+let _touchUpAnimId   = null;
+let _touchUpRunning  = false;
+let _touchUpRawVid   = null;  // reads localStream directly — never the output
 
 // ── Built-in background gallery ───────────────────────────────────────────────
 // Each entry is [colorStop0, colorStop1] for a 135° diagonal gradient.
@@ -436,8 +437,18 @@ function setTouchUp(enabled) {
 function _startTouchUpPipeline() {
   _stopTouchUpPipeline();
 
-  const localVid = document.getElementById('localVideo');
-  if (!localVid?.srcObject) return;
+  if (typeof localStream === 'undefined' || !localStream) return;
+
+  // Hidden video permanently connected to the raw camera (never the output canvas).
+  // Without this, setting localVid.srcObject = _touchUpStream below causes
+  // subsequent tick() calls to read the processed output and compound the filter
+  // every frame (brightness keeps rising, contrast/saturation keep falling).
+  _touchUpRawVid = document.createElement('video');
+  _touchUpRawVid.srcObject  = localStream;
+  _touchUpRawVid.autoplay    = true;
+  _touchUpRawVid.playsInline = true;
+  _touchUpRawVid.muted       = true;
+  _touchUpRawVid.play().catch(() => {});
 
   const canvas = document.createElement('canvas');
   canvas.width = BG_W; canvas.height = BG_H;
@@ -447,9 +458,9 @@ function _startTouchUpPipeline() {
 
   function tick() {
     if (!_touchUpRunning) return;
-    if (localVid.videoWidth > 0) {
+    if (_touchUpRawVid && _touchUpRawVid.videoWidth > 0) {
       ctx.filter = 'brightness(1.03) contrast(0.95) saturate(0.93)';
-      ctx.drawImage(localVid, 0, 0, BG_W, BG_H);
+      ctx.drawImage(_touchUpRawVid, 0, 0, BG_W, BG_H);
       ctx.filter = 'none';
     }
     _touchUpAnimId = requestAnimationFrame(tick);
@@ -460,7 +471,9 @@ function _startTouchUpPipeline() {
 
   const newTrack = _touchUpStream.getVideoTracks()[0];
   if (newTrack && typeof replaceVideoTrack === 'function') replaceVideoTrack(newTrack);
-  if (localVid) localVid.srcObject = _touchUpStream;
+
+  const localVidEl = document.getElementById('localVideo');
+  if (localVidEl) localVidEl.srcObject = _touchUpStream;
 
   showToast('Touch Up My Appearance enabled.', 'success');
 }
@@ -468,7 +481,8 @@ function _startTouchUpPipeline() {
 function _stopTouchUpPipeline() {
   _touchUpRunning = false;
   if (_touchUpAnimId !== null) { cancelAnimationFrame(_touchUpAnimId); _touchUpAnimId = null; }
-  if (_touchUpStream) { _touchUpStream.getTracks().forEach(t => t.stop()); _touchUpStream = null; }
+  if (_touchUpStream)  { _touchUpStream.getTracks().forEach(t => t.stop()); _touchUpStream = null; }
+  if (_touchUpRawVid)  { _touchUpRawVid.srcObject = null; _touchUpRawVid = null; }
 
   if (typeof localStream !== 'undefined' && localStream) {
     const origTrack  = localStream.getVideoTracks()[0];
