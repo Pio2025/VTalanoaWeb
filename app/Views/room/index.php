@@ -74,6 +74,25 @@
 .video-tile:hover .tile-remove-btn, .tile-remove-btn:focus { opacity: 1; }
 @media (max-width: 767px) { .tile-remove-btn { opacity: 0.75; } }
 
+/* ── Network quality indicator ───────────────────────────── */
+.net-quality-pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 2px 9px; border-radius: 20px; margin-left: 8px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+  transition: background 0.5s, color 0.5s;
+}
+.net-quality-pill.net-good { background: rgba(34,197,94,.15);  color: #22c55e; }
+.net-quality-pill.net-fair { background: rgba(234,179,8,.15);  color: #eab308; }
+.net-quality-pill.net-poor { background: rgba(239,68,68,.15);  color: #ef4444; }
+.net-q-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.net-opt-tips {
+  background: var(--rm-btn); border-radius: 10px; padding: 12px;
+  margin-top: 8px; font-size: 11px; color: var(--rm-text-2);
+}
+.net-opt-tips ul { margin: 6px 0 0; padding-left: 16px; line-height: 1.8; }
+.net-bw-bars { display: flex; gap: 4px; margin: 8px 0 6px; }
+.net-bw-bar  { flex: 1; height: 5px; border-radius: 3px; background: var(--rm-border); transition: background 0.4s; }
+
 /* ── Background effects buttons in settings ──────────────── */
 .settings-bg-options { display: flex; gap: 8px; }
 .settings-bg-btn {
@@ -290,6 +309,10 @@
             </div>
             <div class="rec-indicator" id="recIndicator">
                 <span class="rec-dot"></span>REC
+            </div>
+            <div class="net-quality-pill net-good" id="netQualityPill" title="Network quality">
+                <span class="net-q-dot"></span>
+                <span id="netQualityLabel">Good</span>
             </div>
         </div>
         <div class="room-header-right">
@@ -561,6 +584,37 @@
                         </div>
                         <small class="text-muted d-block mt-2" style="font-size:10px;">
                             Applies a soft-focus brightness filter to your outgoing video.
+                        </small>
+                    </div>
+
+                    <!-- Network & Media Quality -->
+                    <div class="settings-group">
+                        <label class="settings-label">
+                            <i class="fa-solid fa-wifi me-2"></i>Network &amp; Media
+                            <span class="settings-hint" id="netQualityBadge" style="color:#22c55e">Good</span>
+                        </label>
+                        <div class="net-bw-bars">
+                            <div class="net-bw-bar" id="bwBar1" style="background:#22c55e"></div>
+                            <div class="net-bw-bar" id="bwBar2" style="background:#22c55e"></div>
+                            <div class="net-bw-bar" id="bwBar3" style="background:#22c55e"></div>
+                        </div>
+                        <small class="text-muted d-block" id="netQualityDesc" style="font-size:10px;">
+                            Network quality is good. Audio is always prioritized — video adjusts automatically when bandwidth is limited.
+                        </small>
+                        <div class="net-opt-tips" id="netOptTips" style="display:none">
+                            <div style="font-size:11px;font-weight:600;margin-bottom:4px;color:var(--rm-text);">
+                                <i class="fa-solid fa-circle-info me-1 text-info"></i>Network Optimization Tips
+                            </div>
+                            <ul>
+                                <li><strong>Wired connection</strong> — ethernet eliminates Wi-Fi packet loss</li>
+                                <li><strong>5 GHz Wi-Fi</strong> — move closer to your router; avoid 2.4 GHz congestion</li>
+                                <li><strong>Split-tunnel VPN</strong> — route video traffic outside the VPN tunnel to cut latency</li>
+                                <li><strong>QoS on router</strong> — prioritize real-time media (DSCP EF / UDP 3478) for lower jitter</li>
+                                <li><strong>Close background apps</strong> — streaming, cloud sync, and downloads compete for bandwidth</li>
+                            </ul>
+                        </div>
+                        <small class="text-muted d-block mt-2" style="font-size:10px;">
+                            Uses advanced real-time protocols — audio quality is preserved even under constrained conditions.
                         </small>
                     </div>
 
@@ -925,6 +979,46 @@ function toggleRoomTheme() {
     localStorage.setItem('room-theme', 'dark');
   }
 }
+
+/* ── Network quality UI — driven by nm:networkQuality events from webrtc.js */
+(function () {
+  var COLOURS = { good: '#22c55e', fair: '#eab308', poor: '#ef4444' };
+  var ACTIVE_BARS = { good: 3, fair: 2, poor: 1 };
+  var DESC = {
+    good: 'Network quality is good. Audio is always prioritized — video adjusts automatically when bandwidth is limited.',
+    fair: 'Network is limited. Video quality has been reduced to protect audio clarity.',
+    poor: 'Network is constrained. Video minimized — audio is fully protected and remains clear.',
+  };
+
+  window.addEventListener('nm:networkQuality', function (e) {
+    var q = (e.detail && e.detail.quality) || 'good';
+    var colour = COLOURS[q] || COLOURS.good;
+    var active = ACTIVE_BARS[q] || 3;
+
+    // Header pill
+    var pill  = document.getElementById('netQualityPill');
+    var label = document.getElementById('netQualityLabel');
+    if (pill)  { pill.className = 'net-quality-pill net-' + q; }
+    if (label) { label.textContent = q.charAt(0).toUpperCase() + q.slice(1); }
+
+    // Settings panel — badge + bars + description + tips
+    var badge = document.getElementById('netQualityBadge');
+    var desc  = document.getElementById('netQualityDesc');
+    var tips  = document.getElementById('netOptTips');
+    var bars  = [
+      document.getElementById('bwBar1'),
+      document.getElementById('bwBar2'),
+      document.getElementById('bwBar3'),
+    ];
+
+    bars.forEach(function (b, i) {
+      if (b) b.style.background = i < active ? colour : '';
+    });
+    if (badge) { badge.textContent = q.charAt(0).toUpperCase() + q.slice(1); badge.style.color = colour; }
+    if (desc)  { desc.textContent = DESC[q] || DESC.good; }
+    if (tips)  { tips.style.display = q !== 'good' ? 'block' : 'none'; }
+  });
+})();
 </script>
 <script src="<?= base_url('js/app.js') ?>"></script>
 <script src="<?= base_url('js/sounds.js') ?>"></script>

@@ -111,6 +111,7 @@ function _updateOverflowTile() {
 /* ── SFU cleanup (call before reconnect) ────────────────── */
 function cleanupSfu() {
   console.log('[SFU] cleanupSfu() — closing RTCPeerConnection and clearing state');
+  _bwStopMonitor();
   if (sfuPc) {
     sfuPc.ontrack = null;
     sfuPc.onicecandidate = null;
@@ -332,6 +333,7 @@ async function connectToSfu() {
   }
 
   console.log('[SFU] ✅ Session ready | id:', sfuSessionId, '| trackNames:', localTrackNames);
+  _bwStartMonitor();
   return { sessionId: sfuSessionId, trackNames: localTrackNames };
 }
 
@@ -886,4 +888,132 @@ function _buildSpotlightStrip(focusedId) {
     thumb.appendChild(nameEl);
     strip.appendChild(thumb);
   });
+}
+
+/* ── Adaptive Bandwidth Manager ──────────────────────────────────────────
+ *
+ * Polls WebRTC Stats every 8 s to gauge outgoing network quality.
+ * When bandwidth is constrained the video bitrate is reduced first —
+ * audio is never capped below its codec default so call clarity is
+ * preserved even under severely congested conditions.
+ *
+ * Quality levels and thresholds:
+ *   good  — loss < 3%, kbps > 350, RTT < 250 ms   → normal bitrate
+ *   fair  — loss 3-8%, kbps 120-350, RTT 250-500 ms → cap video at 600 kbps
+ *   poor  — loss > 8%, kbps < 120, RTT > 500 ms    → cap video at 150 kbps
+ *
+ * Hysteresis: requires 2 consecutive low readings to enter constrained/low
+ * mode, and 3 consecutive good readings to restore normal bitrate.
+ *
+ * Emits window event "nm:networkQuality" with { quality: 'good'|'fair'|'poor' }
+ * so the room UI can update quality indicators in real time.
+ */
+
+const _BW_POLL_MS           = 8000;
+const _BW_MOBILE            = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const _BW_VIDEO_NORMAL_BPS  = _BW_MOBILE ? 600_000 : 2_500_000;
+const _BW_VIDEO_FAIR_BPS    = 600_000;
+const _BW_VIDEO_POOR_BPS    = 150_000;
+
+let _bwMonitorId  = null;
+let _bwPrevStats  = null;
+let _bwLowCount   = 0;
+let _bwGoodCount  = 0;
+let _bwMode       = 'normal'; // 'normal' | 'fair' | 'poor'
+
+function _bwStartMonitor() {
+  if (_bwMonitorId) return;
+  _bwMonitorId = setInterval(_bwCheckQuality, _BW_POLL_MS);
+}
+
+function _bwStopMonitor() {
+  clearInterval(_bwMonitorId);
+  _bwMonitorId = null;
+  _bwPrevStats  = null;
+  _bwLowCount   = 0;
+  _bwGoodCount  = 0;
+  _bwMode       = 'normal';
+}
+
+async function _bwCheckQuality() {
+  if (!sfuPc) return;
+  let stats;
+  try { stats = await sfuPc.getStats(); } catch (_) { return; }
+
+  let videoOut = null;
+  let pair     = null;
+  stats.forEach(r => {
+    if (r.type === 'outbound-rtp' && r.kind === 'video') videoOut = r;
+    if (r.type === 'candidate-pair' && r.state === 'succeeded') pair = r;
+  });
+
+  const now  = Date.now();
+  let quality = 'good';
+
+  if (videoOut && _bwPrevStats) {
+    const dtMs    = Math.max(now - _bwPrevStats.ts, 1);
+    const dtBytes = (videoOut.bytesSent              || 0) - _bwPrevStats.bytesSent;
+    const dtPkts  = (videoOut.packetsSent             || 0) - _bwPrevStats.packetsSent;
+    const dtRetx  = (videoOut.retransmittedPacketsSent || 0) - _bwPrevStats.retx;
+    const kbps    = (dtBytes * 8) / dtMs;
+    const loss    = dtPkts > 0 ? dtRetx / dtPkts : 0;
+    const rttMs   = (pair?.currentRoundTripTime ?? 0) * 1000;
+
+    console.log(`[BW] video ${kbps.toFixed(0)} kbps | loss ${(loss * 100).toFixed(1)}% | rtt ${rttMs.toFixed(0)} ms`);
+
+    if (loss > 0.08 || kbps < 120 || rttMs > 500)      quality = 'poor';
+    else if (loss > 0.03 || kbps < 350 || rttMs > 250) quality = 'fair';
+  }
+
+  _bwPrevStats = {
+    bytesSent: videoOut?.bytesSent              || 0,
+    packetsSent: videoOut?.packetsSent           || 0,
+    retx: videoOut?.retransmittedPacketsSent     || 0,
+    ts: now,
+  };
+
+  _bwApplyPolicy(quality);
+  window.dispatchEvent(new CustomEvent('nm:networkQuality', { detail: { quality } }));
+}
+
+function _bwApplyPolicy(quality) {
+  const sender = sfuPc?.getSenders().find(s => s.track?.kind === 'video');
+  if (!sender) return;
+
+  let targetBps;
+
+  if (quality === 'poor') {
+    _bwGoodCount = 0;
+    _bwLowCount++;
+    if (_bwLowCount >= 2 && _bwMode !== 'poor') {
+      targetBps = _BW_VIDEO_POOR_BPS;
+      _bwMode   = 'poor';
+      console.log('[BW] ⚠ Low-bandwidth mode — video capped to 150 kbps; audio fully protected');
+    }
+  } else if (quality === 'fair') {
+    _bwGoodCount = 0;
+    _bwLowCount++;
+    if (_bwLowCount >= 2 && _bwMode === 'normal') {
+      targetBps = _BW_VIDEO_FAIR_BPS;
+      _bwMode   = 'fair';
+      console.log('[BW] ~ Constrained mode — video capped to 600 kbps');
+    }
+  } else {
+    _bwLowCount = 0;
+    _bwGoodCount++;
+    if (_bwGoodCount >= 3 && _bwMode !== 'normal') {
+      targetBps = _BW_VIDEO_NORMAL_BPS;
+      _bwMode   = 'normal';
+      console.log('[BW] ✅ Restored normal video bitrate:', targetBps / 1000, 'kbps');
+    }
+  }
+
+  if (targetBps !== undefined) {
+    try {
+      const params = sender.getParameters();
+      if (!params.encodings?.length) params.encodings = [{}];
+      params.encodings[0].maxBitrate = targetBps;
+      sender.setParameters(params).catch(() => {});
+    } catch (_) {}
+  }
 }
