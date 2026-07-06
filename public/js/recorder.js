@@ -1,4 +1,13 @@
-/* NavuliMeet — MediaRecorder Wrapper (composite: all tiles + mixed audio) */
+/* NavuliMeet — MediaRecorder (split layout: participants left, host right)
+ *
+ * Recording layout mirrors what the user sees on screen:
+ *   Left  60% — participant grid, capped at REC_MAX_TILES, active speakers first
+ *   Right 40% — local (host/self) tile
+ *
+ * Active speakers (detected by _speakQueue in webrtc.js) are always drawn
+ * at the top-left of the participant grid so they are visible regardless of
+ * how many participants are in the meeting.
+ */
 
 let mediaRecorder      = null;
 let recordedChunks     = [];
@@ -6,6 +15,73 @@ let recordingStartTime = null;
 let _recAnimFrameId    = null;
 let _recAudioCtx       = null;
 
+const REC_W         = 1280;
+const REC_H         = 720;
+const REC_HOST_FRAC = 0.40;   // host pane width as fraction of canvas width
+const REC_MAX_TILES = 12;     // max participant tiles rendered per frame
+
+// ── Tile selection — active speakers first, capped at REC_MAX_TILES ──────────
+function _getRecTiles() {
+  const grid = document.getElementById('videoGrid');
+  if (!grid) return [];
+
+  const all = Array.from(grid.querySelectorAll('.video-tile:not(.overflow-tile)'));
+  if (!all.length) return [];
+  if (all.length <= REC_MAX_TILES) {
+    // Still order by speaker queue even when all fit
+    return _orderByQueue(all);
+  }
+
+  // More tiles than the cap — pick speaker tiles first, then fill from the rest
+  return _orderByQueue(all).slice(0, REC_MAX_TILES);
+}
+
+function _orderByQueue(tiles) {
+  // _speakQueue is declared in webrtc.js (loaded before recorder.js)
+  const queue = (typeof _speakQueue !== 'undefined') ? _speakQueue : [];
+  const qMap  = {};
+  queue.forEach((sid, i) => { qMap['tile-' + sid] = i; });
+
+  const speakers = new Array(queue.length);
+  const others   = [];
+
+  tiles.forEach(t => {
+    const qi = qMap[t.id];
+    if (qi !== undefined) speakers[qi] = t;
+    else others.push(t);
+  });
+
+  return [...speakers.filter(Boolean), ...others];
+}
+
+// ── Name label helper ─────────────────────────────────────────────────────────
+function _recDrawLabel(ctx, name, x, y, maxW) {
+  if (!name) return;
+  ctx.save();
+  ctx.font         = '600 13px Inter, Arial, sans-serif';
+  ctx.textAlign    = 'left';
+  ctx.textBaseline = 'middle';
+  const tw = Math.min(ctx.measureText(name).width + 18, maxW);
+  const th = 22;
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.fillRect(x, y, tw, th);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(name, x + 9, y + th / 2, tw - 14);
+  ctx.restore();
+}
+
+// ── Extract plain text from a tile-name element (strips badge HTML) ──────────
+function _tileName(tile) {
+  const nameEl = tile.querySelector('.tile-name');
+  if (!nameEl) return '';
+  return Array.from(nameEl.childNodes)
+    .filter(nd => nd.nodeType === Node.TEXT_NODE)
+    .map(nd => nd.textContent.trim())
+    .join(' ')
+    .trim() || nameEl.textContent.trim().split('\n')[0].trim();
+}
+
+// ── Start recording ───────────────────────────────────────────────────────────
 async function startRecording() {
   const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
     ? 'video/webm;codecs=vp9,opus'
@@ -18,80 +94,89 @@ async function startRecording() {
     return false;
   }
 
-  const grid = document.getElementById('videoGrid');
-  if (!grid) {
-    showToast('No video grid to record.', 'error');
-    return false;
-  }
-
-  // ── Composite canvas — mirrors what the host sees ──────────────────────────
+  // ── Composite canvas — 1280 × 720 split layout ──────────────────────────────
   const canvas = document.createElement('canvas');
-  canvas.width  = 1280;
-  canvas.height = 720;
+  canvas.width  = REC_W;
+  canvas.height = REC_H;
   const ctx = canvas.getContext('2d');
 
+  const hostPaneW = Math.floor(REC_W * REC_HOST_FRAC);  // 512 px
+  const partPaneW = REC_W - hostPaneW;                   // 768 px
+  const hostPaneX = partPaneW;                           // starts at x=768
+
   function drawFrame() {
+    // Clear background
     ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, REC_W, REC_H);
 
-    const tiles = grid.querySelectorAll('.video-tile');
-    const n     = tiles.length;
+    // ── Right pane: local (host/self) tile ─────────────────────────────────
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(hostPaneX, 0, hostPaneW, REC_H);
 
-    if (!n) { _recAnimFrameId = requestAnimationFrame(drawFrame); return; }
+    const localVid = document.getElementById('localVideo');
+    if (localVid && localVid.readyState >= 2) {
+      try {
+        ctx.drawImage(localVid, hostPaneX, 0, hostPaneW, REC_H);
+      } catch (_) { /* canvas taint — skip frame */ }
+    }
 
-    const cols  = n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : 4;
-    const rows  = Math.ceil(n / cols);
-    const tileW = Math.floor(canvas.width  / cols);
-    const tileH = Math.floor(canvas.height / rows);
+    // Local name label
+    const localName = (typeof DISPLAY_NAME !== 'undefined') ? DISPLAY_NAME : 'You';
+    _recDrawLabel(ctx, localName, hostPaneX + 8, REC_H - 30, hostPaneW - 16);
 
-    tiles.forEach((tile, i) => {
-      const col   = i % cols;
-      const row   = Math.floor(i / cols);
-      const x     = col * tileW;
-      const y     = row * tileH;
-      const video = tile.querySelector('video');
+    // Thin separator between panes
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.fillRect(hostPaneX, 0, 1, REC_H);
 
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(x, y, tileW, tileH);
-      ctx.clip();
+    // ── Left pane: participant tiles (speakers first, capped) ───────────────
+    const tiles = _getRecTiles();
+    const n = tiles.length;
 
-      if (video && video.srcObject && video.readyState >= 2) {
-        try {
-          ctx.drawImage(video, x, y, tileW, tileH);
-        } catch (_) {
+    if (n > 0) {
+      // Adaptive column count
+      const cols  = n === 1 ? 1 : n <= 4 ? 2 : 3;
+      const rows  = Math.ceil(n / cols);
+      const tileW = Math.floor(partPaneW / cols);
+      const tileH = Math.floor(REC_H / rows);
+
+      tiles.forEach((tile, i) => {
+        const col   = i % cols;
+        const row   = Math.floor(i / cols);
+        const x     = col * tileW;
+        const y     = row * tileH;
+        const video = tile.querySelector('video');
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, y, tileW, tileH);
+        ctx.clip();
+
+        // Video or placeholder
+        if (video && video.srcObject && video.readyState >= 2) {
+          try {
+            ctx.drawImage(video, x, y, tileW, tileH);
+          } catch (_) {
+            ctx.fillStyle = '#1e2228';
+            ctx.fillRect(x, y, tileW, tileH);
+          }
+        } else {
           ctx.fillStyle = '#1e2228';
           ctx.fillRect(x, y, tileW, tileH);
         }
-      } else {
-        ctx.fillStyle = '#1e2228';
-        ctx.fillRect(x, y, tileW, tileH);
-      }
 
-      // Name label at bottom of tile
-      const nameEl = tile.querySelector('.tile-name');
-      if (nameEl) {
-        const name = Array.from(nameEl.childNodes)
-          .filter(nd => nd.nodeType === Node.TEXT_NODE)
-          .map(nd => nd.textContent.trim())
-          .join(' ')
-          .trim() || nameEl.textContent.trim().split('\n')[0].trim();
-
-        if (name) {
-          ctx.font      = '13px Inter, Arial, sans-serif';
-          const lw      = Math.min(ctx.measureText(name).width + 16, tileW - 8);
-          const lh      = 22;
-          ctx.fillStyle = 'rgba(0,0,0,0.6)';
-          ctx.fillRect(x + 4, y + tileH - lh - 4, lw, lh);
-          ctx.fillStyle    = '#fff';
-          ctx.textAlign    = 'left';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(name, x + 10, y + tileH - lh / 2 - 4, lw - 12);
+        // Green border for active speaker
+        if (tile.classList.contains('speaking')) {
+          ctx.strokeStyle = '#22c55e';
+          ctx.lineWidth   = 3;
+          ctx.strokeRect(x + 2, y + 2, tileW - 4, tileH - 4);
         }
-      }
 
-      ctx.restore();
-    });
+        // Name label
+        _recDrawLabel(ctx, _tileName(tile), x + 4, y + tileH - 28, tileW - 8);
+
+        ctx.restore();
+      });
+    }
 
     _recAnimFrameId = requestAnimationFrame(drawFrame);
   }
@@ -99,7 +184,7 @@ async function startRecording() {
   drawFrame();
   const canvasStream = canvas.captureStream(30);
 
-  // ── Mix all audio tracks (local mic + all remote participants) ─────────────
+  // ── Mix all audio tracks (local mic + all remote participants) ──────────────
   const audioTracks = [];
 
   try {
@@ -112,7 +197,7 @@ async function startRecording() {
       _recAudioCtx.createMediaStreamSource(new MediaStream([localAudio])).connect(mixDest);
     }
 
-    // Remote participants — grab audio tracks from their video srcObjects
+    // Remote participants — grab audio from their tile videos
     document.querySelectorAll('.remote-tile video').forEach(v => {
       if (!v.srcObject) return;
       v.srcObject.getAudioTracks().forEach(track => {
@@ -168,7 +253,9 @@ async function startRecording() {
     a.remove();
     URL.revokeObjectURL(url);
 
-    const duration = recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0;
+    const duration = recordingStartTime
+      ? Math.round((Date.now() - recordingStartTime) / 1000)
+      : 0;
     await notifyRecordingStop(duration);
   };
 

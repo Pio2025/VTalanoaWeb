@@ -19,6 +19,14 @@ let _speakCtx   = null;
 let _speakRafId = null;
 const _speakNodes = {};  // socketId → { analyser, data: Uint8Array }
 
+// ── Active speaker promotion ──────────────────────────────────────────────
+// Keeps a rolling list of the most recently active speakers so the grid
+// reorders live (speakers float to top) and the recorder knows who to show.
+const _speakQueue    = [];     // socketIds, most-recent-speaker first
+const _lastSpokAt    = {};     // socketId → ms timestamp of last promotion
+const SPEAK_Q_LEN    = 6;      // max speakers remembered in the queue
+const SPEAK_DEBOUNCE = 2000;   // ms — debounce so tiles don't jump around constantly
+
 function _trackSpeaking(socketId, stream) {
   if (_speakNodes[socketId] || !stream) return;
   if (!stream.getAudioTracks().some(t => t.readyState === 'live')) return;
@@ -38,20 +46,46 @@ function _trackSpeaking(socketId, stream) {
 
 function _speakLoop() {
   _speakRafId = requestAnimationFrame(_speakLoop);
+  const now = Date.now();
   for (const [sid, node] of Object.entries(_speakNodes)) {
     node.analyser.getByteFrequencyData(node.data);
     const avg = node.data.reduce((a, b) => a + b, 0) / node.data.length;
     const el  = document.getElementById(sid === 'local' ? 'localTile' : 'tile-' + sid);
     if (el) el.classList.toggle('speaking', avg > 12);
+
+    // Promote active remote speaker to top of grid (debounced)
+    if (sid !== 'local' && avg > 12 && (!_lastSpokAt[sid] || now - _lastSpokAt[sid] > SPEAK_DEBOUNCE)) {
+      _lastSpokAt[sid] = now;
+      const qi = _speakQueue.indexOf(sid);
+      if (qi !== -1) _speakQueue.splice(qi, 1);
+      _speakQueue.unshift(sid);
+      if (_speakQueue.length > SPEAK_Q_LEN) _speakQueue.pop();
+      _applyActiveSpeakerOrder();
+    }
   }
 }
 
 function _untrackSpeaking(socketId) {
   delete _speakNodes[socketId];
+  const qi = _speakQueue.indexOf(socketId);
+  if (qi !== -1) { _speakQueue.splice(qi, 1); _applyActiveSpeakerOrder(); }
+  delete _lastSpokAt[socketId];
   if (!Object.keys(_speakNodes).length && _speakRafId) {
     cancelAnimationFrame(_speakRafId);
     _speakRafId = null;
   }
+}
+
+// Sets CSS order on grid tiles so recent speakers float to the top.
+// Uses negative order values so speakers always sort before non-speakers (order:0).
+function _applyActiveSpeakerOrder() {
+  const grid = document.getElementById('videoGrid');
+  if (!grid) return;
+  grid.querySelectorAll('.video-tile').forEach(t => { t.style.order = '0'; });
+  _speakQueue.forEach((sid, i) => {
+    const tile = document.getElementById('tile-' + sid);
+    if (tile) tile.style.order = String(i - SPEAK_Q_LEN); // -6 … -1
+  });
 }
 
 // Track names we published — shared with room peers so they can subscribe
@@ -742,7 +776,13 @@ function removeRemoteTile(socketId) {
     return;
   }
 
+  // Clean up speaker queue before removing tile
+  const leaveQi = _speakQueue.indexOf(socketId);
+  if (leaveQi !== -1) { _speakQueue.splice(leaveQi, 1); }
+  delete _lastSpokAt[socketId];
+
   document.getElementById('tile-' + socketId)?.remove();
+  _applyActiveSpeakerOrder(); // re-apply with updated queue
   _promoteFirstOverflow(); // move one overflow peer into the vacated slot
   _updateOverflowTile();
   updateGridLayout();
