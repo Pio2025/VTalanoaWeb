@@ -193,15 +193,15 @@
     .cards{grid-template-columns:1fr}
     .strip .stats{gap:28px}
     .section{padding:48px 0}
-    .cta-band{padding:40px 24px;border-radius:16px}
+    .cta-band{padding:40px 20px;border-radius:16px}
     .hero{padding:40px 0 36px}
   }
   @media (max-width:640px){
+    .wrap{padding:0 20px}
     .foot{flex-direction:column;align-items:center;text-align:center;gap:14px}
     .foot-links{justify-content:center;flex-wrap:wrap;gap:16px}
   }
   @media (max-width:480px){
-    .wrap{padding:0 16px}
     .hero h1{font-size:1.9rem}
     .hero-actions{flex-direction:column}
     .hero-actions .btn{width:100%;justify-content:center}

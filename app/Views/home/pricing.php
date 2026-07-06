@@ -212,11 +212,13 @@
     .nav-cta{display:none}
     .hamburger{display:block}
   }
-  @media (max-width:480px){
-    .wrap{padding:0 16px}
-    .page-hero{padding:48px 0 36px}
-    .foot{flex-direction:column;text-align:center}
+  @media (max-width:640px){
+    .wrap{padding:0 20px}
+    .foot{flex-direction:column;align-items:center;text-align:center}
     .foot-links{justify-content:center}
+  }
+  @media (max-width:480px){
+    .page-hero{padding:48px 0 36px}
   }
   @media (prefers-reduced-motion:reduce){
     *{animation:none !important;transition:none !important}

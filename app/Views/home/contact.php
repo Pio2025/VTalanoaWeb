@@ -91,10 +91,12 @@
     .contact-shell { padding: 40px 20px 60px; }
     .form-card { padding: 28px 20px; }
   }
-  @media (max-width: 480px) {
-    .page-hero { padding: 48px 20px 36px; }
+  @media (max-width: 640px) {
     .foot { flex-direction: column; align-items: center; text-align: center; }
     .foot-links { justify-content: center; }
+  }
+  @media (max-width: 480px) {
+    .page-hero { padding: 48px 20px 36px; }
   }
 </style>
 </head>

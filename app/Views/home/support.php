@@ -116,18 +116,20 @@
   @media (max-width: 768px) {
     .nav-links { display: none; }
     .hamburger { display: block; }
-    .cta-banner { padding: 32px 24px; margin: 48px 16px 0; }
+    .cta-banner { padding: 32px 24px; margin: 48px 20px 0; }
     .cta-banner h2 { font-size: 20px; }
+  }
+  @media (max-width: 640px) {
+    .foot { flex-direction: column; align-items: center; text-align: center; }
+    .foot-links { justify-content: center; }
   }
   @media (max-width: 480px) {
     .hero { padding: 48px 20px 60px; }
     .search-wrap input { font-size: 15px; padding: 15px 50px 15px 18px; }
-    .section { padding: 48px 16px 0; }
+    .section { padding: 48px 20px 0; }
     .categories { grid-template-columns: 1fr 1fr; }
     .cta-banner { flex-direction: column; text-align: center; }
     .cta-actions { justify-content: center; }
-    .foot { flex-direction: column; align-items: center; text-align: center; }
-    .foot-links { justify-content: center; }
   }
   @media (max-width: 360px) {
     .categories { grid-template-columns: 1fr; }

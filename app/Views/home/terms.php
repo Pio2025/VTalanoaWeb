@@ -75,8 +75,8 @@
     .nav-links { display: none; }
     .hamburger { display: block; }
   }
-  @media (max-width: 480px) {
-    .content { padding: 40px 16px 60px; }
+  @media (max-width: 640px) {
+    .content { padding: 40px 20px 60px; }
     .foot { flex-direction: column; align-items: center; text-align: center; }
     .foot-links { justify-content: center; }
   }

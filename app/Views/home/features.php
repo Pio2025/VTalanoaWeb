@@ -261,14 +261,14 @@
   @media(max-width:640px){
     .feat-grid{grid-template-columns:1fr}
     .admin-stat-row{grid-template-columns:repeat(2,1fr)}
-    .cta-band{padding:40px 24px;border-radius:16px}
+    .cta-band{padding:40px 20px;border-radius:16px}
     .page-hero{padding:52px 0 40px}
+    .wrap{padding:0 20px}
+    .foot{flex-direction:column;align-items:center;text-align:center}
+    .foot-links{justify-content:center}
   }
   @media(max-width:480px){
-    .wrap{padding:0 16px}
     .hero-actions{flex-direction:column;align-items:center}
-    .foot{flex-direction:column;text-align:center}
-    .foot-links{justify-content:center}
     .vid-grid{grid-template-columns:repeat(2,1fr)}
   }
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

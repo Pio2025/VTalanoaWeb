@@ -238,9 +238,11 @@
     .why-grid { grid-template-columns: 1fr; }
     .featured-card { padding: 36px 28px; }
     .dl-section { padding: 48px 20px; }
+    .wrap { padding: 0 20px; }
+    .foot { flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+    .foot-links { justify-content: center; }
   }
   @media (max-width: 480px) {
-    .wrap { padding: 0 16px; }
     .hero h1 { font-size: 1.9rem; }
     .hero-cta { flex-direction: column; }
     .hero-cta a { width: 100%; justify-content: center; }
@@ -249,8 +251,6 @@
     .ptab { padding: 14px 16px; font-size: .82rem; }
     .cta-band-actions { flex-direction: column; align-items: center; }
     .cta-band-actions a { width: 100%; max-width: 280px; }
-    .foot { flex-direction: column; align-items: center; text-align: center; gap: 14px; }
-    .foot-links { justify-content: center; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
 </style>
