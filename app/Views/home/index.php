@@ -196,6 +196,10 @@
     .cta-band{padding:40px 24px;border-radius:16px}
     .hero{padding:40px 0 36px}
   }
+  @media (max-width:640px){
+    .foot{flex-direction:column;align-items:center;text-align:center;gap:14px}
+    .foot-links{justify-content:center;flex-wrap:wrap;gap:16px}
+  }
   @media (max-width:480px){
     .wrap{padding:0 16px}
     .hero h1{font-size:1.9rem}
@@ -205,8 +209,6 @@
     .ctrl{width:36px;height:36px}
     .ctrl.end{width:48px}
     .avatar{width:38px;height:38px;font-size:.85rem}
-    .foot{flex-direction:column;text-align:center}
-    .foot-links{justify-content:center}
   }
   @media (max-width:360px){
     .hero h1{font-size:1.65rem}
@@ -223,10 +225,10 @@
 <!-- Mobile nav overlay -->
 <div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
   <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&#x2715;</button>
-  <a href="<?= base_url('features') ?>" onclick="closeMobileNav()">Features</a>
-  <a href="<?= base_url('pricing') ?>" onclick="closeMobileNav()">Pricing</a>
-  <a href="#download" onclick="closeMobileNav()">Download</a>
-  <a href="#help" onclick="closeMobileNav()">Help</a>
+  <a href="<?= base_url('features') ?>">Features</a>
+  <a href="<?= base_url('pricing') ?>">Pricing</a>
+  <a href="<?= base_url('download') ?>">Download</a>
+  <a href="<?= base_url('support') ?>">Help</a>
   <div class="divider"></div>
   <a class="btn btn-ghost" href="<?= base_url('auth/login') ?>" style="color:#fff;border-color:rgba(255,255,255,.4)">Sign in</a>
   <a class="btn btn-primary" href="<?= base_url('auth/register') ?>">Sign up free</a>
@@ -240,8 +242,8 @@
     <nav class="nav-links" aria-label="Main">
       <a href="<?= base_url('features') ?>">Features</a>
       <a href="<?= base_url('pricing') ?>">Pricing</a>
-      <a href="#download">Download</a>
-      <a href="#help">Help</a>
+      <a href="<?= base_url('download') ?>">Download</a>
+      <a href="<?= base_url('support') ?>">Help</a>
     </nav>
     <div class="nav-cta">
       <a class="btn btn-ghost" href="<?= base_url('auth/login') ?>">Sign in</a>

@@ -39,6 +39,11 @@ class Home extends BaseController
         return view('home/support');
     }
 
+    public function download(): string
+    {
+        return view('home/download');
+    }
+
     public function contactSubmit(): mixed
     {
         $rules = [
