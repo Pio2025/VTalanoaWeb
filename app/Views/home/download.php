@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="<?= base_url('css/public.css') ?>" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -32,39 +33,6 @@
   a:hover { text-decoration: underline; }
 
   .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
-
-  /* ── Nav ── */
-  header {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(255,255,255,.92); backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line);
-  }
-  .nav { display: flex; align-items: center; gap: 32px; height: 68px; }
-  .logo { display: flex; align-items: center; text-decoration: none; }
-  .nav-links { display: flex; gap: 26px; margin-left: 8px; list-style: none; }
-  .nav-links a { color: var(--muted); font-size: .92rem; font-weight: 500; text-decoration: none; }
-  .nav-links a:hover, .nav-links a.active { color: var(--navy); }
-  .nav-links a.active { font-weight: 700; }
-  .nav-cta { margin-left: auto; display: flex; gap: 12px; align-items: center; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: .95rem; padding: 10px 22px; border-radius: 10px; text-decoration: none; border: 0; cursor: pointer; transition: transform .15s, box-shadow .15s, opacity .15s; }
-  .btn:hover { text-decoration: none; }
-  .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 6px 18px -6px rgba(28,117,188,.55); }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -6px rgba(28,117,188,.6); }
-  .btn-ghost { background: transparent; color: var(--navy); border: 1.5px solid var(--line); }
-  .btn-ghost:hover { border-color: var(--navy); }
-  .btn-sm { font-size: .88rem; padding: 8px 18px; }
-
-  /* Hamburger & mobile nav */
-  .hamburger { display: none; background: none; border: 0; cursor: pointer; padding: 6px; border-radius: 8px; margin-left: auto; }
-  .hamburger:hover { background: var(--blue-light); }
-  .hamburger svg { width: 24px; height: 24px; display: block; fill: var(--navy); }
-  .mobile-nav { display: none; position: fixed; inset: 0; background: rgba(38,34,98,.97); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px 24px; }
-  .mobile-nav.open { display: flex; }
-  .mobile-nav a { color: #fff; font-size: 1.2rem; font-weight: 600; text-decoration: none; font-family: 'Bricolage Grotesque', sans-serif; }
-  .mobile-nav a:hover { opacity: .8; }
-  .mobile-nav .m-divider { width: 60px; height: 1px; background: rgba(255,255,255,.2); }
-  .mobile-nav .btn-m { background: var(--blue); padding: 12px 32px; border-radius: 10px; font-size: 1rem; }
-  .mobile-nav-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,.15); border: 0; color: #fff; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.3rem; }
 
   /* ── Hero ── */
   .hero {
@@ -216,18 +184,8 @@
   .cta-band p { color: rgba(255,255,255,.75); max-width: 52ch; margin: 0 auto 32px; }
   .cta-band-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
-  /* ── Footer ── */
-  footer { border-top: 1px solid var(--line); background: var(--surface); }
-  .foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 28px 24px; max-width: 1160px; margin: 0 auto; }
-  .foot-links { display: flex; gap: 24px; flex-wrap: wrap; }
-  .foot-links a { color: var(--muted); text-decoration: none; font-size: 13px; }
-  .foot-links a:hover { color: var(--blue); }
-  .copy { font-size: 13px; color: var(--muted); }
-
   /* ── Responsive ── */
   @media (max-width: 920px) {
-    .nav-links, .nav-cta { display: none; }
-    .hamburger { display: block; }
     .featured-card { grid-template-columns: 1fr; }
     .featured-visual { display: none; }
     .why-grid { grid-template-columns: 1fr 1fr; }
@@ -239,8 +197,6 @@
     .featured-card { padding: 36px 28px; }
     .dl-section { padding: 48px 20px; }
     .wrap { padding: 0 20px; }
-    .foot { flex-direction: column; align-items: center; text-align: center; gap: 14px; }
-    .foot-links { justify-content: center; }
   }
   @media (max-width: 480px) {
     .hero h1 { font-size: 1.9rem; }
@@ -257,40 +213,7 @@
 </head>
 <body>
 
-<!-- Mobile nav overlay -->
-<div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
-  <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&#x2715;</button>
-  <a href="<?= base_url('features') ?>">Features</a>
-  <a href="<?= base_url('pricing') ?>">Pricing</a>
-  <a href="<?= base_url('download') ?>">Download</a>
-  <a href="<?= base_url('support') ?>">Help</a>
-  <div class="m-divider"></div>
-  <a href="<?= base_url('auth/login') ?>" style="color:rgba(255,255,255,.85)">Sign In</a>
-  <a href="<?= base_url('auth/register') ?>" class="btn-m">Get Started Free</a>
-</div>
-
-<header>
-  <div class="wrap nav">
-    <a class="logo" href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" style="height:36px;max-width:180px;object-fit:contain;">
-    </a>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="<?= base_url('features') ?>">Features</a></li>
-        <li><a href="<?= base_url('pricing') ?>">Pricing</a></li>
-        <li><a href="<?= base_url('download') ?>" class="active">Download</a></li>
-        <li><a href="<?= base_url('support') ?>">Help</a></li>
-      </ul>
-    </nav>
-    <div class="nav-cta">
-      <a class="btn btn-ghost btn-sm" href="<?= base_url('auth/login') ?>">Sign in</a>
-      <a class="btn btn-primary btn-sm" href="<?= base_url('auth/register') ?>">Get started free</a>
-    </div>
-    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
-      <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-    </button>
-  </div>
-</header>
+<?= view('partials/public_nav') ?>
 
 <!-- ── Hero ── -->
 <section class="hero">
@@ -571,36 +494,9 @@
   </div>
 </section>
 
-<footer>
-  <div class="foot">
-    <a href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" style="height:30px;max-width:140px;object-fit:contain;display:block;">
-    </a>
-    <nav class="foot-links" aria-label="Footer">
-      <a href="<?= base_url('features') ?>">Features</a>
-      <a href="<?= base_url('pricing') ?>">Pricing</a>
-      <a href="<?= base_url('support') ?>">Help</a>
-      <a href="<?= base_url('contact') ?>">Contact</a>
-      <a href="<?= base_url('privacy') ?>">Privacy</a>
-      <a href="<?= base_url('terms') ?>">Terms</a>
-    </nav>
-    <span class="copy">&copy; <?= date('Y') ?> VTalanoa. All rights reserved.</span>
-  </div>
-</footer>
+<?= view('partials/public_foot') ?>
 
 <script>
-// Hamburger nav
-(function(){
-  const h = document.getElementById('hamburger');
-  const n = document.getElementById('mobileNav');
-  const c = document.getElementById('mobileNavClose');
-  function open(){ n.classList.add('open'); h?.setAttribute('aria-expanded','true'); document.body.style.overflow='hidden'; }
-  function close(){ n.classList.remove('open'); h?.setAttribute('aria-expanded','false'); document.body.style.overflow=''; }
-  h?.addEventListener('click', open);
-  c?.addEventListener('click', close);
-  document.addEventListener('keydown', e => e.key === 'Escape' && close());
-})();
-
 // Platform tabs filter
 document.querySelectorAll('.ptab').forEach(tab => {
   tab.addEventListener('click', function() {

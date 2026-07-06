@@ -6,6 +6,7 @@
 <title>Terms of Service — VTalanoa</title>
 <link rel="icon" href="<?= base_url('favicon.ico') ?>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="<?= base_url('css/public.css') ?>" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -17,17 +18,6 @@
     --bg: #f8fafc;
   }
   body { font-family: 'Inter', sans-serif; color: var(--text); background: #fff; line-height: 1.7; }
-
-  /* Nav */
-  header { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
-  .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
-  .wrap.nav { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .logo img { display: block; }
-  .nav-links { display: flex; gap: 28px; list-style: none; }
-  .nav-links a { text-decoration: none; color: var(--muted); font-size: 14px; font-weight: 500; }
-  .nav-links a:hover { color: var(--blue); }
-  .btn-nav { background: var(--blue); color: #fff !important; padding: 8px 20px; border-radius: 8px; }
-  .btn-nav:hover { background: #1560a0 !important; color: #fff !important; }
 
   /* Hero band */
   .page-hero { background: linear-gradient(135deg, #262262 0%, #3d3797 50%, #1c75bc 100%); color: #fff; padding: 64px 24px 48px; text-align: center; }
@@ -52,66 +42,14 @@
   .highlight-box { background: #eff6ff; border-left: 4px solid var(--blue); border-radius: 0 8px 8px 0; padding: 16px 20px; margin: 20px 0; font-size: 14px; color: #1e40af; }
   a { color: var(--blue); }
 
-  /* Footer */
-  footer { border-top: 1px solid var(--line); background: var(--bg); }
-  .foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 28px 24px; max-width: 900px; margin: 0 auto; }
-  .foot-links { display: flex; gap: 24px; flex-wrap: wrap; }
-  .foot-links a { color: var(--muted); text-decoration: none; font-size: 13px; }
-  .foot-links a:hover { color: var(--blue); }
-  .copy { font-size: 13px; color: var(--muted); }
-
-  /* Hamburger & mobile nav */
-  .hamburger { display: none; background: none; border: 0; cursor: pointer; padding: 6px; border-radius: 8px; }
-  .hamburger:hover { background: #f1f5f9; }
-  .hamburger svg { width: 24px; height: 24px; display: block; fill: var(--navy); }
-  .mobile-nav { display: none; position: fixed; inset: 0; background: rgba(38,34,98,.97); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px 24px; }
-  .mobile-nav.open { display: flex; }
-  .mobile-nav a { color: #fff; font-size: 1.2rem; font-weight: 600; text-decoration: none; }
-  .mobile-nav a:hover { opacity: .8; }
-  .mobile-nav .divider { width: 60px; height: 1px; background: rgba(255,255,255,.2); }
-  .mobile-nav .btn-nav-m { background: var(--blue); padding: 12px 32px; border-radius: 10px; font-size: 1rem; }
-  .mobile-nav-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,.15); border: 0; color: #fff; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.3rem; }
-  @media (max-width: 768px) {
-    .nav-links { display: none; }
-    .hamburger { display: block; }
-  }
   @media (max-width: 640px) {
     .content { padding: 40px 20px 60px; }
-    .foot { flex-direction: column; align-items: center; text-align: center; }
-    .foot-links { justify-content: center; }
   }
 </style>
 </head>
 <body>
 
-<div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
-  <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&#x2715;</button>
-  <a href="<?= base_url('features') ?>">Features</a>
-  <a href="<?= base_url('pricing') ?>">Pricing</a>
-  <a href="<?= base_url('support') ?>">Help</a>
-  <div class="divider"></div>
-  <a href="<?= base_url('auth/login') ?>">Sign In</a>
-  <a href="<?= base_url('auth/register') ?>" class="btn-nav-m">Get Started</a>
-</div>
-
-<header>
-  <div class="wrap nav">
-    <a class="logo" href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" style="height:36px;max-width:180px;object-fit:contain;">
-    </a>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="<?= base_url('features') ?>">Features</a></li>
-        <li><a href="<?= base_url('pricing') ?>">Pricing</a></li>
-        <li><a href="<?= base_url('auth/login') ?>">Sign In</a></li>
-        <li><a href="<?= base_url('auth/register') ?>" class="btn-nav">Get Started</a></li>
-      </ul>
-    </nav>
-    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
-      <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-    </button>
-  </div>
-</header>
+<?= view('partials/public_nav') ?>
 
 <div class="page-hero">
   <h1>Terms of Service</h1>
@@ -255,31 +193,6 @@
   </section>
 </div>
 
-<footer>
-  <div class="foot">
-    <a class="logo" href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" style="height:30px;max-width:140px;object-fit:contain;">
-    </a>
-    <nav class="foot-links" aria-label="Footer">
-      <a href="<?= base_url('privacy') ?>">Privacy Policy</a>
-      <a href="<?= base_url('terms') ?>">Terms of Service</a>
-      <a href="mailto:support@vtalanoa.com">Support</a>
-    </nav>
-    <span class="copy">&copy; <?= date('Y') ?> VTalanoa. All rights reserved.</span>
-  </div>
-</footer>
-
-<script>
-(function(){
-  const h = document.getElementById('hamburger');
-  const n = document.getElementById('mobileNav');
-  const c = document.getElementById('mobileNavClose');
-  function open(){ n.classList.add('open'); h?.setAttribute('aria-expanded','true'); document.body.style.overflow='hidden'; }
-  function close(){ n.classList.remove('open'); h?.setAttribute('aria-expanded','false'); document.body.style.overflow=''; }
-  h?.addEventListener('click', open);
-  c?.addEventListener('click', close);
-  document.addEventListener('keydown', e => e.key === 'Escape' && close());
-})();
-</script>
+<?= view('partials/public_foot') ?>
 </body>
 </html>

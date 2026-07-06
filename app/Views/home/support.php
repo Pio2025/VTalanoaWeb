@@ -6,6 +6,7 @@
 <title>Help &amp; Support — VTalanoa</title>
 <link rel="icon" href="<?= base_url('favicon.ico') ?>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="<?= base_url('css/public.css') ?>" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -18,15 +19,6 @@
     --bg: #f8fafc;
   }
   body { font-family: 'Inter', sans-serif; color: var(--text); background: #fff; line-height: 1.6; }
-
-  /* Nav */
-  header { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
-  .wrap-nav { max-width: 1140px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .nav-links { display: flex; gap: 28px; list-style: none; align-items: center; }
-  .nav-links a { text-decoration: none; color: var(--muted); font-size: 14px; font-weight: 500; transition: color .15s; }
-  .nav-links a:hover { color: var(--blue); }
-  .btn-nav { background: var(--blue); color: #fff !important; padding: 8px 20px; border-radius: 8px; }
-  .btn-nav:hover { background: #1560a0 !important; }
 
   /* Hero with search */
   .hero { background: linear-gradient(135deg, #262262 0%, #3d3797 55%, #1c75bc 100%); padding: 72px 24px 80px; text-align: center; color: #fff; }
@@ -94,34 +86,22 @@
   .btn-cta-outline { border: 2px solid rgba(255,255,255,.6); color: #fff; padding: 13px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; text-decoration: none; transition: background .2s; }
   .btn-cta-outline:hover { background: rgba(255,255,255,.1); }
 
-  /* Footer */
-  footer { border-top: 1px solid var(--line); background: var(--bg); margin-top: 80px; }
-  .foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 28px 24px; max-width: 1140px; margin: 0 auto; }
-  .foot-links { display: flex; gap: 24px; flex-wrap: wrap; }
-  .foot-links a { color: var(--muted); text-decoration: none; font-size: 13px; }
-  .foot-links a:hover { color: var(--blue); }
-  .copy { font-size: 13px; color: var(--muted); }
+  /* Footer spacing */
+  footer { margin-top: 80px; }
 
-  /* Hamburger & mobile nav */
-  .hamburger { display: none; background: none; border: 0; cursor: pointer; padding: 6px; border-radius: 8px; }
-  .hamburger:hover { background: #f1f5f9; }
-  .hamburger svg { width: 24px; height: 24px; display: block; fill: var(--navy); }
-  .mobile-nav { display: none; position: fixed; inset: 0; background: rgba(38,34,98,.97); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 40px 24px; }
-  .mobile-nav.open { display: flex; }
-  .mobile-nav a { color: #fff; font-size: 1.2rem; font-weight: 600; text-decoration: none; }
-  .mobile-nav a:hover { opacity: .8; }
-  .mobile-nav .divider { width: 60px; height: 1px; background: rgba(255,255,255,.2); }
-  .mobile-nav .btn-nav-m { background: var(--blue); padding: 12px 32px; border-radius: 10px; font-size: 1rem; }
-  .mobile-nav-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,.15); border: 0; color: #fff; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.3rem; }
+  /* Search results */
+  #searchResults { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.15); margin-top: 8px; overflow: hidden; z-index: 50; text-align: left; max-height: 360px; overflow-y: auto; }
+  .sr-item { padding: 14px 20px; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--text); }
+  .sr-item:last-child { border-bottom: none; }
+  .sr-item:hover { background: var(--blue-light); }
+  .sr-item-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .sr-item-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .sr-item-cat { font-size: 12px; color: var(--muted); }
+  .sr-no-results { padding: 24px 20px; text-align: center; color: var(--muted); font-size: 14px; }
+
   @media (max-width: 768px) {
-    .nav-links { display: none; }
-    .hamburger { display: block; }
     .cta-banner { padding: 32px 24px; margin: 48px 20px 0; }
     .cta-banner h2 { font-size: 20px; }
-  }
-  @media (max-width: 640px) {
-    .foot { flex-direction: column; align-items: center; text-align: center; }
-    .foot-links { justify-content: center; }
   }
   @media (max-width: 480px) {
     .hero { padding: 48px 20px 60px; }
@@ -134,49 +114,11 @@
   @media (max-width: 360px) {
     .categories { grid-template-columns: 1fr; }
   }
-
-  /* Search results */
-  #searchResults { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.15); margin-top: 8px; overflow: hidden; z-index: 50; text-align: left; max-height: 360px; overflow-y: auto; }
-  .sr-item { padding: 14px 20px; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--text); }
-  .sr-item:last-child { border-bottom: none; }
-  .sr-item:hover { background: var(--blue-light); }
-  .sr-item-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-  .sr-item-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-  .sr-item-cat { font-size: 12px; color: var(--muted); }
-  .sr-no-results { padding: 24px 20px; text-align: center; color: var(--muted); font-size: 14px; }
 </style>
 </head>
 <body>
 
-<div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
-  <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&#x2715;</button>
-  <a href="<?= base_url('features') ?>">Features</a>
-  <a href="<?= base_url('pricing') ?>">Pricing</a>
-  <a href="<?= base_url('contact') ?>">Contact</a>
-  <div class="divider"></div>
-  <a href="<?= base_url('auth/login') ?>">Sign In</a>
-  <a href="<?= base_url('auth/register') ?>" class="btn-nav-m">Get Started</a>
-</div>
-
-<header>
-  <div class="wrap-nav">
-    <a href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" style="height:36px;max-width:180px;object-fit:contain;display:block;">
-    </a>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="<?= base_url('features') ?>">Features</a></li>
-        <li><a href="<?= base_url('pricing') ?>">Pricing</a></li>
-        <li><a href="<?= base_url('contact') ?>">Contact</a></li>
-        <li><a href="<?= base_url('auth/login') ?>">Sign In</a></li>
-        <li><a href="<?= base_url('auth/register') ?>" class="btn-nav">Get Started</a></li>
-      </ul>
-    </nav>
-    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
-      <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-    </button>
-  </div>
-</header>
+<?= view('partials/public_nav') ?>
 
 <!-- Hero Search -->
 <div class="hero">
@@ -572,20 +514,7 @@
   </div>
 </div>
 
-<footer>
-  <div class="foot">
-    <a href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo-web.png') ?>" alt="VTalanoa" style="height:30px;max-width:140px;object-fit:contain;display:block;">
-    </a>
-    <nav class="foot-links" aria-label="Footer">
-      <a href="<?= base_url('support') ?>">Help</a>
-      <a href="<?= base_url('contact') ?>">Contact</a>
-      <a href="<?= base_url('privacy') ?>">Privacy Policy</a>
-      <a href="<?= base_url('terms') ?>">Terms of Service</a>
-    </nav>
-    <span class="copy">&copy; <?= date('Y') ?> VTalanoa. All rights reserved.</span>
-  </div>
-</footer>
+<?= view('partials/public_foot') ?>
 
 <script>
 // FAQ accordion
@@ -625,10 +554,10 @@ const articles = [
   { title: 'What plans does VTalanoa offer?',   anchor: '#faq-billing',         cat: 'Plans & Billing',   icon: '&#128179;' },
   { title: 'How do I upgrade my plan?',         anchor: '#faq-billing',         cat: 'Plans & Billing',   icon: '&#11014;'  },
   { title: 'Can I cancel my subscription?',     anchor: '#faq-billing',         cat: 'Plans & Billing',   icon: '&#10060;'  },
-  { title: 'How does the waiting room work?',   anchor: '#faq-security',        cat: 'Security & Privacy','icon': '&#128274;' },
-  { title: 'How do I set a meeting password?',  anchor: '#faq-security',        cat: 'Security & Privacy','icon': '&#128274;' },
-  { title: 'Is my meeting data encrypted?',     anchor: '#faq-security',        cat: 'Security & Privacy','icon': '&#128272;' },
-  { title: 'Someone is disrupting my meeting',  anchor: '#faq-security',        cat: 'Security & Privacy','icon': '&#128274;' },
+  { title: 'How does the waiting room work?',   anchor: '#faq-security',        cat: 'Security & Privacy', icon: '&#128274;' },
+  { title: 'How do I set a meeting password?',  anchor: '#faq-security',        cat: 'Security & Privacy', icon: '&#128274;' },
+  { title: 'Is my meeting data encrypted?',     anchor: '#faq-security',        cat: 'Security & Privacy', icon: '&#128272;' },
+  { title: 'Someone is disrupting my meeting',  anchor: '#faq-security',        cat: 'Security & Privacy', icon: '&#128274;' },
 ];
 
 const searchInput   = document.getElementById('searchInput');
@@ -666,19 +595,6 @@ function highlightMatch(text, q) {
 
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
-</script>
-
-<script>
-(function(){
-  const h = document.getElementById('hamburger');
-  const n = document.getElementById('mobileNav');
-  const c = document.getElementById('mobileNavClose');
-  function open(){ n.classList.add('open'); h?.setAttribute('aria-expanded','true'); document.body.style.overflow='hidden'; }
-  function close(){ n.classList.remove('open'); h?.setAttribute('aria-expanded','false'); document.body.style.overflow=''; }
-  h?.addEventListener('click', open);
-  c?.addEventListener('click', close);
-  document.addEventListener('keydown', e => e.key === 'Escape' && close());
-})();
 </script>
 </body>
 </html>

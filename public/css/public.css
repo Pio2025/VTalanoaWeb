@@ -1,0 +1,282 @@
+/* ──────────────────────────────────────────────────────────
+ * public.css — Shared styles for all public (marketing) pages
+ * Covers: nav, mobile nav, footer, shared buttons.
+ * All selectors are prefixed with .pub- to avoid clashes.
+ * ──────────────────────────────────────────────────────────*/
+
+/* ── CSS custom properties ────────────────────────────── */
+:root {
+  --pub-ink:        #262262;
+  --pub-blue:       #1c75bc;
+  --pub-tint-ink:   #edecf7;
+  --pub-tint-blue:  #e5f1fa;
+  --pub-muted:      #5d5c82;
+  --pub-line:       rgba(38,34,98,.12);
+  --pub-shadow:     0 18px 50px -18px rgba(38,34,98,.28);
+}
+
+/* ── Shared base (applied only to public pages that load
+      this file; room/app pages have their own base) ──── */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+/* ── Shared container ─────────────────────────────────── */
+.pub-wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Sticky header ────────────────────────────────────── */
+.pub-header {
+  position: sticky;
+  top: 0;
+  z-index: 150;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(255,255,255,.68);
+  border-bottom: 1px solid var(--pub-line);
+}
+
+/* ── Nav row ──────────────────────────────────────────── */
+.pub-nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: 68px;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.pub-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.pub-logo img {
+  height: 36px;
+  max-width: 180px;
+  object-fit: contain;
+  display: block;
+}
+
+.pub-nav-links {
+  display: flex;
+  gap: 26px;
+  margin-left: 4px;
+  list-style: none;
+  padding: 0;
+}
+.pub-nav-links a {
+  color: var(--pub-muted);
+  text-decoration: none;
+  font-size: .92rem;
+  font-weight: 500;
+  transition: color .15s;
+}
+.pub-nav-links a:hover,
+.pub-nav-links a.active {
+  color: var(--pub-ink);
+}
+.pub-nav-links a.active { font-weight: 700; }
+
+.pub-nav-cta {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Hamburger ────────────────────────────────────────── */
+.pub-hamburger {
+  display: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 6px;
+  color: var(--pub-ink);
+  margin-left: auto;
+  border-radius: 8px;
+  transition: background .15s;
+  line-height: 0;
+}
+.pub-hamburger:hover { background: var(--pub-tint-ink); }
+.pub-hamburger svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--pub-ink);
+  display: block;
+}
+
+/* ── Mobile nav overlay ───────────────────────────────── */
+.pub-mobile-nav {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(38,34,98,.97);
+  z-index: 400;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 40px 24px;
+}
+.pub-mobile-nav.open { display: flex; }
+
+.pub-mobile-nav-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,.12);
+  border: 0;
+  color: #fff;
+  font-size: 1.3rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.pub-mobile-nav-close:hover { background: rgba(255,255,255,.24); }
+
+.pub-mobile-nav a {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-decoration: none;
+  opacity: .88;
+  transition: opacity .15s;
+}
+.pub-mobile-nav a:hover { opacity: 1; }
+
+.pub-mobile-divider {
+  width: 60px;
+  height: 1px;
+  background: rgba(255,255,255,.2);
+}
+
+/* ── Shared nav buttons ───────────────────────────────── */
+.pub-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: .92rem;
+  padding: 9px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s;
+  white-space: nowrap;
+}
+.pub-btn:focus-visible { outline: 3px solid var(--pub-blue); outline-offset: 2px; }
+
+.pub-btn-primary {
+  background: var(--pub-blue);
+  color: #fff;
+  box-shadow: 0 6px 18px -6px rgba(28,117,188,.5);
+}
+.pub-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -6px rgba(28,117,188,.6);
+  color: #fff;
+}
+
+.pub-btn-ghost {
+  background: transparent;
+  color: var(--pub-ink);
+  border: 1.5px solid var(--pub-line);
+}
+.pub-btn-ghost:hover {
+  border-color: var(--pub-ink);
+  color: var(--pub-ink);
+}
+
+/* Ghost btn inside mobile nav (dark overlay context) */
+.pub-mobile-nav .pub-btn-ghost {
+  color: #fff;
+  border-color: rgba(255,255,255,.4);
+}
+.pub-mobile-nav .pub-btn-primary { font-size: 1rem; padding: 12px 32px; }
+.pub-mobile-nav .pub-btn-ghost   { font-size: 1rem; padding: 12px 32px; }
+
+/* ── Footer ───────────────────────────────────────────── */
+.pub-footer {
+  border-top: 1px solid var(--pub-line);
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  margin-top: auto;
+}
+.pub-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 28px 24px;
+  max-width: 1160px;
+  margin: 0 auto;
+}
+.pub-foot-logo img {
+  height: 30px;
+  max-width: 140px;
+  object-fit: contain;
+  display: block;
+}
+.pub-foot-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+}
+.pub-foot-links a {
+  color: var(--pub-muted);
+  text-decoration: none;
+  font-size: .85rem;
+  transition: color .15s;
+}
+.pub-foot-links a:hover { color: var(--pub-ink); }
+.pub-copy {
+  font-size: .82rem;
+  color: var(--pub-muted);
+  white-space: nowrap;
+}
+
+/* ── Mobile section spacing ───────────────────────────── */
+/* Prevents sections from visually touching on small screens */
+@media (max-width: 640px) {
+  .pub-section-gap { margin-top: 48px; }
+  .pub-section-gap-sm { margin-top: 32px; }
+}
+
+/* ── Responsive nav ───────────────────────────────────── */
+@media (max-width: 920px) {
+  .pub-nav-links { display: none; }
+  .pub-nav-cta   { display: none; }
+  .pub-hamburger { display: block; }
+}
+
+/* ── Responsive footer ────────────────────────────────── */
+@media (max-width: 640px) {
+  .pub-nav  { padding: 0 20px; }
+  .pub-wrap { padding: 0 20px; }
+  .pub-foot {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding: 28px 20px;
+  }
+  .pub-foot-links { justify-content: center; gap: 14px; }
+}

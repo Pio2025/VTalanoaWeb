@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="<?= base_url('css/public.css') ?>" rel="stylesheet">
 <style>
   :root{
     --ink:       #262262;
@@ -41,58 +42,6 @@
   h1,h2,h3{font-family:'Bricolage Grotesque','Inter',sans-serif;line-height:1.12}
 
   .wrap{max-width:1160px;margin:0 auto;padding:0 24px}
-
-  /* ---------- Nav ---------- */
-  header{
-    position:sticky;top:0;z-index:50;
-    backdrop-filter:blur(12px);
-    background:rgba(255,255,255,.65);
-    border-bottom:1px solid var(--line);
-  }
-  .nav{display:flex;align-items:center;gap:32px;height:68px}
-  .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
-  .logo-mark{width:34px;height:34px;border-radius:10px;position:relative;overflow:hidden;background:var(--ink);flex-shrink:0}
-  .logo-mark::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 46%,var(--blue) 46%)}
-  .nav-links{display:flex;gap:26px;margin-left:8px}
-  .nav-links a{color:var(--muted);text-decoration:none;font-size:.92rem;font-weight:500}
-  .nav-links a:hover{color:var(--ink)}
-  .nav-cta{margin-left:auto;display:flex;gap:12px;align-items:center}
-
-  /* Hamburger */
-  .hamburger{
-    display:none;background:none;border:0;cursor:pointer;
-    padding:6px;color:var(--ink);margin-left:auto;
-    border-radius:8px;transition:background .15s;
-  }
-  .hamburger:hover{background:var(--tint-ink)}
-  .hamburger svg{width:24px;height:24px;fill:var(--ink);display:block}
-
-  /* Mobile nav overlay */
-  .mobile-nav{
-    display:none;position:fixed;inset:0;
-    background:rgba(38,34,98,.96);
-    z-index:200;
-    flex-direction:column;align-items:center;justify-content:center;gap:28px;
-    padding:40px 24px;
-  }
-  .mobile-nav.open{display:flex}
-  .mobile-nav a{
-    color:#fff;font-size:1.3rem;font-weight:600;
-    text-decoration:none;font-family:'Bricolage Grotesque',sans-serif;
-    opacity:.9;transition:opacity .15s;
-  }
-  .mobile-nav a:hover{opacity:1}
-  .mobile-nav .divider{width:60px;height:1px;background:rgba(255,255,255,.2)}
-  .mobile-nav-close{
-    position:absolute;top:20px;right:20px;
-    background:rgba(255,255,255,.12);border:0;
-    color:#fff;font-size:1.3rem;cursor:pointer;
-    width:40px;height:40px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    transition:background .15s;
-  }
-  .mobile-nav-close:hover{background:rgba(255,255,255,.22)}
-  .mobile-nav .btn{font-size:1rem;padding:12px 32px}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:.95rem;padding:12px 22px;border-radius:12px;text-decoration:none;border:0;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease}
   .btn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
@@ -171,23 +120,12 @@
   .cta-band .btn-primary{background:#fff;color:var(--ink);box-shadow:none}
   .cta-band .btn-primary:hover{background:var(--tint-ink);transform:translateY(-1px)}
 
-  /* ---------- Footer ---------- */
-  footer{margin-top:72px;border-top:1px solid var(--line);background:rgba(255,255,255,.55);backdrop-filter:blur(8px)}
-  .foot{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:28px 0;flex-wrap:wrap}
-  .foot-links{display:flex;gap:22px;flex-wrap:wrap}
-  .foot-links a{color:var(--muted);text-decoration:none;font-size:.88rem}
-  .foot-links a:hover{color:var(--ink)}
-  .copy{font-size:.85rem;color:var(--muted)}
-
   /* ---------- Responsive ---------- */
   @media (max-width:1080px){
     .cards{grid-template-columns:repeat(2,1fr)}
   }
   @media (max-width:920px){
     .hero{grid-template-columns:1fr;padding:56px 0 48px;gap:40px}
-    .nav-links{display:none}
-    .nav-cta{display:none}
-    .hamburger{display:block}
   }
   @media (max-width:680px){
     .cards{grid-template-columns:1fr}
@@ -198,8 +136,7 @@
   }
   @media (max-width:640px){
     .wrap{padding:0 20px}
-    .foot{flex-direction:column;align-items:center;text-align:center;gap:14px}
-    .foot-links{justify-content:center;flex-wrap:wrap;gap:16px}
+    .strip{padding-top:16px}
   }
   @media (max-width:480px){
     .hero h1{font-size:1.9rem}
@@ -222,38 +159,7 @@
 </head>
 <body>
 
-<!-- Mobile nav overlay -->
-<div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
-  <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">&#x2715;</button>
-  <a href="<?= base_url('features') ?>">Features</a>
-  <a href="<?= base_url('pricing') ?>">Pricing</a>
-  <a href="<?= base_url('download') ?>">Download</a>
-  <a href="<?= base_url('support') ?>">Help</a>
-  <div class="divider"></div>
-  <a class="btn btn-ghost" href="<?= base_url('auth/login') ?>" style="color:#fff;border-color:rgba(255,255,255,.4)">Sign in</a>
-  <a class="btn btn-primary" href="<?= base_url('auth/register') ?>">Sign up free</a>
-</div>
-
-<header>
-  <div class="wrap nav">
-    <a class="logo" href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo-web.png') ?>" alt="MeetWave" style="height:36px;max-width:180px;object-fit:contain;">
-    </a>
-    <nav class="nav-links" aria-label="Main">
-      <a href="<?= base_url('features') ?>">Features</a>
-      <a href="<?= base_url('pricing') ?>">Pricing</a>
-      <a href="<?= base_url('download') ?>">Download</a>
-      <a href="<?= base_url('support') ?>">Help</a>
-    </nav>
-    <div class="nav-cta">
-      <a class="btn btn-ghost" href="<?= base_url('auth/login') ?>">Sign in</a>
-      <a class="btn btn-primary" href="<?= base_url('auth/register') ?>">Sign up free</a>
-    </div>
-    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
-      <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-    </button>
-  </div>
-</header>
+<?= view('partials/public_nav') ?>
 
 <main>
   <!-- Hero -->
@@ -270,7 +176,7 @@
     </div>
 
     <!-- Mock meeting window -->
-    <div class="meet" role="img" aria-label="Preview of a MeetWave video call with four participants">
+    <div class="meet" role="img" aria-label="Preview of a VTalanoa video call with four participants">
       <div class="meet-top">
         <span class="dot"></span><span class="dot"></span><span class="dot"></span>
         <span class="meet-title">Weekly team sync &middot; 4 participants</span>
@@ -307,7 +213,7 @@
   <section class="wrap section" id="features">
     <div class="section-head">
       <h2>Everything you need to meet, in one place</h2>
-      <p>From quick catch-ups to all-hands meetings, MeetWave keeps every conversation simple, secure, and free to start.</p>
+      <p>From quick catch-ups to all-hands meetings, VTalanoa keeps every conversation simple, secure, and free to start.</p>
     </div>
     <div class="cards">
       <article class="card">
@@ -338,7 +244,7 @@
       <article class="card">
         <div class="icon"><svg viewBox="0 0 24 24"><path d="M17 1H7a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm0 17H7V5h10v13z"/></svg></div>
         <h3>Works on every device</h3>
-        <p>Start on your laptop, continue on your phone. MeetWave runs in the browser and as an app on Windows, Mac, iOS, and Android.</p>
+        <p>Start on your laptop, continue on your phone. VTalanoa runs in the browser and as an app on Windows, Mac, iOS, and Android.</p>
       </article>
     </div>
   </section>
@@ -353,48 +259,6 @@
   </section>
 </main>
 
-<footer>
-  <div class="wrap foot">
-    <a class="logo" href="<?= base_url('/') ?>">
-      <img src="<?= base_url('img/logo-web.png') ?>" alt="MeetWave" style="height:32px;max-width:160px;object-fit:contain;">
-    </a>
-    <nav class="foot-links" aria-label="Footer">
-      <a href="<?= base_url('support') ?>">Help</a>
-      <a href="<?= base_url('contact') ?>">Contact</a>
-      <a href="<?= base_url('privacy') ?>">Privacy</a>
-      <a href="<?= base_url('terms') ?>">Terms</a>
-    </nav>
-    <span class="copy">&copy; <?= date('Y') ?> MeetWave. All rights reserved.</span>
-  </div>
-</footer>
-
-<script>
-(function(){
-  const hamburger    = document.getElementById('hamburger');
-  const mobileNav    = document.getElementById('mobileNav');
-  const mobileClose  = document.getElementById('mobileNavClose');
-
-  function openNav(){
-    mobileNav.classList.add('open');
-    hamburger.setAttribute('aria-expanded','true');
-    document.body.style.overflow='hidden';
-  }
-  function closeMobileNav(){
-    mobileNav.classList.remove('open');
-    hamburger.setAttribute('aria-expanded','false');
-    document.body.style.overflow='';
-  }
-  window.closeMobileNav = closeMobileNav;
-
-  hamburger.addEventListener('click', openNav);
-  mobileClose.addEventListener('click', closeMobileNav);
-  mobileNav.addEventListener('click', function(e){
-    if(e.target === mobileNav) closeMobileNav();
-  });
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape') closeMobileNav();
-  });
-})();
-</script>
+<?= view('partials/public_foot') ?>
 </body>
 </html>
