@@ -23,8 +23,11 @@
                     <div class="mb-4">
                         <label class="form-label required">Meeting Title</label>
                         <input type="text" name="title" id="title" class="form-control form-control-app"
-                               placeholder="e.g., Weekly Team Standup" required maxlength="200"
-                               autocomplete="off">
+                               placeholder="e.g., Weekly Team Standup" required maxlength="50"
+                               autocomplete="off" oninput="updateTitleCounter(this)">
+                        <div class="d-flex justify-content-end mt-1">
+                            <small id="titleCounter" class="text-muted">50 characters remaining</small>
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -226,6 +229,15 @@ function togglePwVisibility() {
     pwVisible   = !pwVisible;
     input.type  = pwVisible ? 'text' : 'password';
     eye.className = pwVisible ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+}
+
+function updateTitleCounter(input) {
+    var max       = parseInt(input.getAttribute('maxlength'), 10);
+    var remaining = max - input.value.length;
+    var counter   = document.getElementById('titleCounter');
+    if (!counter) return;
+    counter.textContent = remaining + ' character' + (remaining === 1 ? '' : 's') + ' remaining';
+    counter.style.color = remaining <= 10 ? '#ef4444' : '';
 }
 </script>
 <?= $this->endSection() ?>

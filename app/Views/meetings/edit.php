@@ -23,8 +23,12 @@
                     <div class="mb-3">
                         <label class="form-label required">Meeting Title</label>
                         <input type="text" id="title" class="form-control form-control-app"
-                               value="<?= esc($meeting['title']) ?>" required maxlength="150"
-                               placeholder="e.g. Weekly Team Standup">
+                               value="<?= esc($meeting['title']) ?>" required maxlength="50"
+                               placeholder="e.g. Weekly Team Standup"
+                               oninput="updateTitleCounter(this)">
+                        <div class="d-flex justify-content-end mt-1">
+                            <small id="titleCounter" class="text-muted"></small>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -146,5 +150,19 @@ document.getElementById('editMeetingForm').addEventListener('submit', async func
         showToast(data.error || 'Could not update meeting.', 'error');
     }
 });
+
+function updateTitleCounter(input) {
+    var max       = parseInt(input.getAttribute('maxlength'), 10);
+    var remaining = max - input.value.length;
+    var counter   = document.getElementById('titleCounter');
+    if (!counter) return;
+    counter.textContent = remaining + ' character' + (remaining === 1 ? '' : 's') + ' remaining';
+    counter.style.color = remaining <= 10 ? '#ef4444' : '';
+}
+// Initialise counter for pre-filled value on page load
+(function () {
+    var input = document.getElementById('title');
+    if (input) updateTitleCounter(input);
+})();
 </script>
 <?= $this->endSection() ?>

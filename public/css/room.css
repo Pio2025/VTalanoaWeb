@@ -90,9 +90,25 @@
   padding: 0 20px; gap: 12px;
 }
 
-.room-header-left  { display: flex; align-items: center; gap: 16px; min-width: 0; }
-.room-header-center{ display: flex; align-items: center; justify-content: center; }
-.room-header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+/* Three-column header: left and right each get equal flex share so the
+   center (timer + badges) always stays truly centred. The title in left
+   will truncate with … when it would otherwise push the center off. */
+.room-header-left {
+  display: flex; align-items: center; gap: 16px;
+  flex: 1 1 0;    /* equal share, can shrink */
+  min-width: 0;   /* allow shrinking below content size */
+}
+.room-header-center {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  flex: 0 0 auto;  /* take only what it needs */
+  flex-shrink: 0;  /* never compressed by siblings */
+}
+.room-header-right {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1 1 0;              /* equal share like left */
+  min-width: 0;
+  justify-content: flex-end;
+}
 
 .room-brand {
   display: flex; align-items: center; gap: 8px;
@@ -114,6 +130,7 @@
 .room-title {
   font-size: 13px; font-weight: 600; color: var(--rm-text-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;  /* required for ellipsis to work inside a flex child */
 }
 
 .room-timer {
@@ -854,6 +871,9 @@
   .room-brand span   { display: none; }
   .room-header       { height: 48px; padding: 0 10px; }
   .room-timer        { font-size: 12px; padding: 3px 8px; }
+  /* Hide network label — keep just the colour dot to save header space */
+  #netQualityLabel   { display: none; }
+  .net-quality-pill  { padding: 2px 5px; margin-left: 4px; }
   .room-info-btn span{ display: none; }
   .control-left      { display: none; }
   .control-bar {
