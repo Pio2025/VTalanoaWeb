@@ -1,33 +1,76 @@
 /* NavuliMeet — Virtual Background (MediaPipe Selfie Segmentation)
  *
- * Supports: blur background | replace background with custom image
- * The outgoing video track is swapped to a canvas stream processed by the
- * segmenter so remote participants see the effect too, not just the local tile.
+ * Optimised for real-time performance using the same architectural
+ * choices described by Zoom's engineering team:
+ *
+ *  1. PRE-WARM  — model is loaded into memory in the background
+ *                 immediately after the camera is ready, so toggling
+ *                 "blur" pays no model-loading cost.
+ *
+ *  2. LOW-RES SEGMENTATION — the camera frame is downscaled to
+ *                 256 × 144 before being sent to the neural network.
+ *                 The network outputs a tiny mask which is then
+ *                 upscaled back to 640 × 360. Running the model on
+ *                 ~4× fewer pixels cuts per-frame cost dramatically.
+ *
+ *  3. TEMPORAL COHERENCE — a persistent mask canvas is blended
+ *                 75 % new / 25 % previous each frame. The person
+ *                 silhouette barely changes frame-to-frame, so this
+ *                 smooths flicker and lets the system tolerate skipped
+ *                 frames without visual jarring.
+ *
+ *  4. EDGE FEATHERING — the low-res mask is upscaled with a small
+ *                 blur (blur(3px)) applied at composite time, giving
+ *                 soft, anti-aliased person edges instead of a blocky
+ *                 hard cutout.
+ *
+ *  5. LIGHTER MODEL — modelSelection: 0 (general, 256 × 144 input)
+ *                 instead of 1 (landscape, 256 × 256). Matches the
+ *                 low-res pipeline and avoids unnecessary model weight.
  */
 
-const BG_W = 640, BG_H = 360;
+// ── Constants ─────────────────────────────────────────────────────────────────
+const BG_W = 640, BG_H = 360;   // output / compositing canvas resolution
+const SEG_W = 256, SEG_H = 144; // segmentation input resolution (low-res)
+const SEG_BLEND = 0.75;          // temporal mask weight: 75% new, 25% previous
 
-let _bgEffect       = 'none';   // 'none' | 'blur' | 'image'
-let _bgImage        = null;     // HTMLImageElement for virtual background
-let _bgSeg          = null;     // SelfieSegmentation instance
-let _bgLoading      = false;
-let _bgRunning      = false;
-let _bgAnimId       = null;
-let _bgStream       = null;     // canvas.captureStream() — the outgoing video
+// ── State ─────────────────────────────────────────────────────────────────────
+let _bgEffect    = 'none';  // 'none' | 'blur' | 'image'
+let _bgImage     = null;    // HTMLImageElement — virtual background
+let _bgSeg       = null;    // SelfieSegmentation instance (once loaded, reused)
+let _bgLoading   = false;
+let _bgRunning   = false;
+let _bgAnimId    = null;
+let _bgStream    = null;    // canvas.captureStream() → outgoing video track
 
-// ── Touch Up pipeline (standalone when no BG effect is active) ─
+// Temporal coherence: persists across frames while a BG effect is active
+let _maskCanvas  = null;
+let _maskCtx     = null;
+
+// Touch-up pipeline (active when BG effect is 'none')
 let _touchUpEnabled = false;
 let _touchUpStream  = null;
 let _touchUpAnimId  = null;
 let _touchUpRunning = false;
 
-// ── Public API ──────────────────────────────────────────────────────────────
+// ── Pre-warm (called from webrtc.js after initLocalStream resolves) ───────────
+//
+// Loads and initialises the segmentation model in the background so that
+// when the user first clicks "Blur" the model is already in memory and
+// the effect feels instant.
+
+async function warmBgSegmenter() {
+  if (_bgSeg || _bgLoading) return; // already warm or loading
+  console.log('[BG] Pre-warming segmenter in background…');
+  await _bgLoadSegmenter();
+  if (_bgSeg) console.log('[BG] Segmenter warm — blur will be instant');
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
 
 async function applyBgEffect(effect) {
-  // Update button states
-  ['bgNone', 'bgBlur', 'bgImage'].forEach(id => {
-    document.getElementById(id)?.classList.remove('active');
-  });
+  ['bgNone', 'bgBlur', 'bgImage'].forEach(id =>
+    document.getElementById(id)?.classList.remove('active'));
   const activeId = { none: 'bgNone', blur: 'bgBlur', image: 'bgImage' }[effect];
   document.getElementById(activeId)?.classList.add('active');
 
@@ -37,11 +80,11 @@ async function applyBgEffect(effect) {
   _bgEffect = effect;
 
   if (effect === 'none') {
-    _bgStop(); // _bgStop re-enables touch-up pipeline if needed
+    _bgStop(); // restarts touch-up pipeline if needed
     return;
   }
 
-  // BG pipeline takes over — stop standalone touch-up (filter integrated in pipeline)
+  // BG pipeline takes over — stop standalone touch-up (filter is integrated below)
   _stopTouchUpPipeline();
 
   if (effect === 'image' && !_bgImage) {
@@ -55,7 +98,6 @@ async function applyBgEffect(effect) {
 async function loadCustomBg(input) {
   const file = input.files[0];
   if (!file) return;
-
   const url = URL.createObjectURL(file);
   const img = new Image();
   img.onload = async () => {
@@ -66,13 +108,13 @@ async function loadCustomBg(input) {
   img.src = url;
 }
 
-// ── Segmenter init (lazy — loads MediaPipe on first use) ─────────────────────
+// ── Segmenter init ────────────────────────────────────────────────────────────
 
 async function _bgLoadSegmenter() {
   if (_bgSeg) return _bgSeg;
 
-  // Wait if another call is already initialising
   if (_bgLoading) {
+    // Another call is already initialising — wait for it
     await new Promise(res => {
       const t = setInterval(() => { if (!_bgLoading) { clearInterval(t); res(); } }, 100);
     });
@@ -82,38 +124,38 @@ async function _bgLoadSegmenter() {
   _bgLoading = true;
 
   try {
-    // Load MediaPipe Selfie Segmentation script dynamically
     if (typeof SelfieSegmentation === 'undefined') {
-      const PRIMARY_CDN  = 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js';
-      const FALLBACK_CDN = 'https://unpkg.com/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js';
+      const PRIMARY  = 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js';
+      const FALLBACK = 'https://unpkg.com/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js';
+
       await new Promise((res, rej) => {
-        const tryLoad = (src, fallback) => {
+        const tryLoad = (src, fb) => {
           const s = document.createElement('script');
-          s.src         = src;
-          s.crossOrigin = 'anonymous';
+          s.src = src; s.crossOrigin = 'anonymous';
           s.onload = res;
           s.onerror = () => {
-            if (fallback) {
-              console.warn('[BG] Primary CDN failed, trying fallback…');
-              tryLoad(fallback, null);
-            } else {
-              rej(new Error('Failed to load MediaPipe script from all CDNs'));
-            }
+            if (fb) { console.warn('[BG] Primary CDN failed, trying fallback…'); tryLoad(fb, null); }
+            else      rej(new Error('Failed to load MediaPipe from all CDNs'));
           };
           document.head.appendChild(s);
         };
-        tryLoad(PRIMARY_CDN, FALLBACK_CDN);
+        tryLoad(PRIMARY, FALLBACK);
       });
     }
 
     _bgSeg = new SelfieSegmentation({
-      locateFile: f =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/${f}`,
+      locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/${f}`,
     });
-    _bgSeg.setOptions({ modelSelection: 1 }); // 1 = landscape model (higher accuracy)
+
+    // modelSelection 0 = general model (256×144 input resolution) — lighter and
+    // perfectly matched to our low-res segmentation pipeline.
+    // modelSelection 1 = landscape model (256×256) — heavier, no benefit at 256×144.
+    _bgSeg.setOptions({ modelSelection: 0 });
+
     await _bgSeg.initialize();
+
   } catch (e) {
-    console.error('[BG] Segmenter failed to load:', e);
+    console.error('[BG] Segmenter failed to initialise:', e);
     _bgSeg    = null;
     _bgLoading = false;
     return null;
@@ -123,13 +165,12 @@ async function _bgLoadSegmenter() {
   return _bgSeg;
 }
 
-// ── Processing pipeline ──────────────────────────────────────────────────────
+// ── Processing pipeline ───────────────────────────────────────────────────────
 
 async function _bgStart() {
-  _bgStop(); // clean up any previous session
+  _bgStop(); // clean up any previous session first
 
-  // Stop settings preview before starting BG effect to free the camera
-  // (some mobile browsers only allow one camera consumer at a time)
+  // Some mobile browsers only allow one camera consumer at a time
   if (typeof settingsPreviewStream !== 'undefined' && settingsPreviewStream) {
     settingsPreviewStream.getTracks().forEach(t => t.stop());
     settingsPreviewStream = null;
@@ -143,61 +184,91 @@ async function _bgStart() {
     return;
   }
 
+  // If the model is already warm this toast appears for only a fraction of a second
   showToast('Loading background effect…', 'default');
 
   const seg = await _bgLoadSegmenter();
   if (!seg) {
-    showToast('Background effects could not be loaded. Check your internet connection.', 'error');
+    showToast('Background effects could not be loaded. Check your connection.', 'error');
     _bgEffect = 'none';
     document.getElementById('bgNone')?.classList.add('active');
     return;
   }
 
-  // Output canvas — its captureStream becomes the outgoing video track
-  const outCanvas = document.createElement('canvas');
-  outCanvas.width = BG_W; outCanvas.height = BG_H;
-  const outCtx = outCanvas.getContext('2d');
+  // ── Canvas setup ───────────────────────────────────────────────────────────
 
-  // Person canvas — original frame clipped by the segmentation mask
+  // Low-res input canvas: downscaled camera frame sent to the neural network.
+  // The network sees 256×144 instead of 640×360 — ~4× fewer pixels to classify.
+  const segCanvas = document.createElement('canvas');
+  segCanvas.width = SEG_W; segCanvas.height = SEG_H;
+  const segCtx = segCanvas.getContext('2d');
+
+  // Temporal mask canvas (SEG_W × SEG_H): survives across frames.
+  // Each frame, the new mask is blended at SEG_BLEND weight over the previous
+  // mask, then the combined canvas is upscaled to the output resolution.
+  _maskCanvas = document.createElement('canvas');
+  _maskCanvas.width = SEG_W; _maskCanvas.height = SEG_H;
+  _maskCtx = _maskCanvas.getContext('2d');
+  // Prime the mask white (full person visible) so the first blend looks clean
+  _maskCtx.fillStyle = '#fff';
+  _maskCtx.fillRect(0, 0, SEG_W, SEG_H);
+
+  // Person canvas: full-res camera frame, cut out by the blended+feathered mask
   const personCanvas = document.createElement('canvas');
   personCanvas.width = BG_W; personCanvas.height = BG_H;
   const personCtx = personCanvas.getContext('2d');
 
+  // Output canvas: composited result sent to the remote SFU
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = BG_W; outCanvas.height = BG_H;
+  const outCtx = outCanvas.getContext('2d');
+
   let segBusy = false;
 
   seg.onResults(({ image, segmentationMask }) => {
-    if (!outCtx || !segmentationMask) { segBusy = false; return; }
+    if (!segmentationMask) { segBusy = false; return; }
 
-    // 1. Isolate person pixels using the mask (white = person, black = background)
+    // ── 1. TEMPORAL MASK BLENDING ────────────────────────────────────────────
+    // Blend the incoming mask (75%) over whatever was in _maskCanvas (25%).
+    // This smooths jitter between frames and lets us reuse the previous mask
+    // on frames when segmentation didn't run without visible artefacts.
+    _maskCtx.globalAlpha = SEG_BLEND;
+    _maskCtx.drawImage(segmentationMask, 0, 0, SEG_W, SEG_H);
+    _maskCtx.globalAlpha = 1.0;
+    // _maskCanvas now: 75 % new mask + 25 % previous mask
+
+    // ── 2. PERSON ISOLATION with edge feathering ──────────────────────────
+    // Draw the full-res camera frame into personCanvas, then cut it using the
+    // low-res blended mask. Upscaling the small mask with blur(3px) applied at
+    // draw time gives soft, anti-aliased person edges (feathered silhouette).
     personCtx.clearRect(0, 0, BG_W, BG_H);
-    personCtx.drawImage(image, 0, 0, BG_W, BG_H);
+    personCtx.drawImage(image, 0, 0, BG_W, BG_H);          // full-res camera frame
     personCtx.globalCompositeOperation = 'destination-in';
-    personCtx.drawImage(segmentationMask, 0, 0, BG_W, BG_H);
+    personCtx.filter = 'blur(3px)';                         // feather edges on upscale
+    personCtx.drawImage(_maskCanvas, 0, 0, BG_W, BG_H);    // 256×144 → 640×360 upscale
+    personCtx.filter = 'none';
     personCtx.globalCompositeOperation = 'source-over';
 
-    // 2. Draw background layer
+    // ── 3. BACKGROUND LAYER ───────────────────────────────────────────────
     if (_bgEffect === 'blur') {
+      // CSS blur on canvas drawImage is GPU-composited in Chrome/Edge via
+      // the 2D renderer — the cheap part once the mask is known.
       outCtx.filter = 'blur(18px)';
       outCtx.drawImage(image, 0, 0, BG_W, BG_H);
       outCtx.filter = 'none';
     } else if (_bgEffect === 'image' && _bgImage) {
-      // Letterbox/cover the background image to fill the canvas
-      const imgAr    = _bgImage.naturalWidth / _bgImage.naturalHeight;
-      const canvasAr = BG_W / BG_H;
+      // Cover-fit the user's background image
+      const iAr = _bgImage.naturalWidth / _bgImage.naturalHeight;
+      const cAr = BG_W / BG_H;
       let sx = 0, sy = 0, sw = _bgImage.naturalWidth, sh = _bgImage.naturalHeight;
-      if (imgAr > canvasAr) {
-        sw = sh * canvasAr;
-        sx = (_bgImage.naturalWidth - sw) / 2;
-      } else {
-        sh = sw / canvasAr;
-        sy = (_bgImage.naturalHeight - sh) / 2;
-      }
+      if (iAr > cAr) { sw = sh * cAr; sx = (_bgImage.naturalWidth  - sw) / 2; }
+      else            { sh = sw / cAr; sy = (_bgImage.naturalHeight - sh) / 2; }
       outCtx.drawImage(_bgImage, sx, sy, sw, sh, 0, 0, BG_W, BG_H);
     } else {
       outCtx.drawImage(image, 0, 0, BG_W, BG_H);
     }
 
-    // 3. Person on top of background (with optional touch-up softening)
+    // ── 4. COMPOSITE PERSON ON BACKGROUND ─────────────────────────────────
     if (_touchUpEnabled) outCtx.filter = 'brightness(1.03) contrast(0.95) saturate(0.93)';
     outCtx.drawImage(personCanvas, 0, 0, BG_W, BG_H);
     outCtx.filter = 'none';
@@ -212,7 +283,13 @@ async function _bgStart() {
 
     if (!segBusy && localVid.videoWidth > 0) {
       segBusy = true;
-      seg.send({ image: localVid }).catch(err => {
+
+      // KEY OPTIMISATION: draw the camera to the tiny 256×144 canvas first,
+      // then send that to the segmenter. The network classifies ~37,000 pixels
+      // instead of ~230,000 — the same narrow task, at a fraction of the cost.
+      segCtx.drawImage(localVid, 0, 0, SEG_W, SEG_H);
+
+      seg.send({ image: segCanvas }).catch(err => {
         console.warn('[BG] send error:', err);
         segBusy = false;
       });
@@ -225,11 +302,9 @@ async function _bgStart() {
 
   _bgStream = outCanvas.captureStream(30);
   const newTrack = _bgStream.getVideoTracks()[0];
-  if (newTrack && typeof replaceVideoTrack === 'function') {
-    replaceVideoTrack(newTrack);
-  }
+  if (newTrack && typeof replaceVideoTrack === 'function') replaceVideoTrack(newTrack);
 
-  // Show processed output in the local tile so the user sees the effect
+  // Show processed output in local tile so the user sees the effect
   const localVidEl = document.getElementById('localVideo');
   if (localVidEl) localVidEl.srcObject = _bgStream;
 
@@ -244,36 +319,35 @@ function _bgStop() {
   if (_bgAnimId !== null) { cancelAnimationFrame(_bgAnimId); _bgAnimId = null; }
   if (_bgStream) { _bgStream.getTracks().forEach(t => t.stop()); _bgStream = null; }
 
+  // Discard the temporal mask — it will be re-primed next time _bgStart runs
+  _maskCanvas = null;
+  _maskCtx    = null;
+
   // Restore original camera stream to local tile and outgoing track
   if (typeof localStream !== 'undefined' && localStream) {
-    const origTrack = localStream.getVideoTracks()[0];
+    const origTrack  = localStream.getVideoTracks()[0];
     const localVidEl = document.getElementById('localVideo');
     if (localVidEl) localVidEl.srcObject = localStream;
     if (origTrack && typeof replaceVideoTrack === 'function') replaceVideoTrack(origTrack);
   }
 
-  // If touch-up was on, restart its standalone pipeline now that BG is gone
+  // Restart the standalone touch-up pipeline if it was on
   if (_touchUpEnabled) setTimeout(_startTouchUpPipeline, 80);
 }
 
-// ── Touch Up public API ──────────────────────────────────────────────────────
+// ── Touch Up ──────────────────────────────────────────────────────────────────
 
 function setTouchUp(enabled) {
   _touchUpEnabled = enabled;
-
   document.getElementById('touchUpOff')?.classList.toggle('active', !enabled);
   document.getElementById('touchUpOn')?.classList.toggle('active',  enabled);
 
   if (_bgEffect !== 'none') {
-    // BG pipeline is running — the filter is applied inline, nothing else to do
+    // BG pipeline is running — filter applied inline in onResults, nothing else needed
     return;
   }
 
-  if (enabled) {
-    _startTouchUpPipeline();
-  } else {
-    _stopTouchUpPipeline();
-  }
+  if (enabled) _startTouchUpPipeline(); else _stopTouchUpPipeline();
 }
 
 function _startTouchUpPipeline() {
@@ -313,7 +387,6 @@ function _stopTouchUpPipeline() {
   if (_touchUpAnimId !== null) { cancelAnimationFrame(_touchUpAnimId); _touchUpAnimId = null; }
   if (_touchUpStream) { _touchUpStream.getTracks().forEach(t => t.stop()); _touchUpStream = null; }
 
-  // Restore original stream
   if (typeof localStream !== 'undefined' && localStream) {
     const origTrack  = localStream.getVideoTracks()[0];
     const localVidEl = document.getElementById('localVideo');

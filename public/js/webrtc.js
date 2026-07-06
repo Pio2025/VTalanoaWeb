@@ -181,6 +181,10 @@ async function initLocalStream() {
   // Resume all videos when app returns from background (mobile freeze fix)
   document.addEventListener('visibilitychange', _resumeAllVideos);
 
+  // Pre-warm the background segmentation model so blur toggle feels instant.
+  // Deferred 3 s to avoid competing with camera init and SFU connection.
+  setTimeout(() => { if (typeof warmBgSegmenter === 'function') warmBgSegmenter(); }, 3000);
+
   return localStream;
 }
 
