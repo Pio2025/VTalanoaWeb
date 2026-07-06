@@ -99,11 +99,11 @@ body{
   background:var(--bg);
 }
 
-/* ── Host pane (50% left) ── */
+/* ── Host pane (50% right) ── */
 .host-pane{
+  order:2;
   width:50%;flex-shrink:0;
   padding:8px;
-  border-right:1px solid var(--border);
   display:flex;align-items:stretch;
 }
 .host-tile{
@@ -141,9 +141,11 @@ body{
   font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;font-weight:500;
 }
 
-/* ── Participants pane (50% right) ── */
+/* ── Participants pane (50% left) ── */
 .participants-pane{
+  order:1;
   flex:1;position:relative;overflow:hidden;
+  border-right:1px solid var(--border);
   display:flex;flex-direction:column;
 }
 .pane-header{
@@ -164,16 +166,17 @@ body{
 
 /* ── Participant grid ── */
 .video-grid{
-  flex:1;overflow-y:auto;
+  flex:1;overflow:hidden;
   display:grid;
   gap:5px;
   padding:6px;
   grid-template-columns:repeat(4,1fr);
-  grid-auto-rows:minmax(100px,16vh);
-  align-content:start;
+  grid-auto-rows:1fr;
+  align-content:stretch;
   scrollbar-width:thin;
   scrollbar-color:rgba(255,255,255,.15) transparent;
 }
+.video-grid.scrollable{overflow-y:auto;align-content:start;}
 .video-grid::-webkit-scrollbar{width:4px;}
 .video-grid::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px;}
 
@@ -211,6 +214,57 @@ body{
   font-size:9px;color:#fff;
 }
 
+/* ── Focus / spotlight overlay ── */
+.focus-overlay{
+  display:none;position:absolute;inset:0;z-index:100;
+  background:#0a0a0a;flex-direction:column;
+}
+.focus-overlay.active{display:flex;}
+.focus-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:rgba(0,0,0,.6);flex-shrink:0;
+}
+.focus-name{color:#fff;font-weight:700;font-size:14px;}
+.focus-exit{
+  background:rgba(255,255,255,.12);color:#fff;border:none;
+  border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;font-family:inherit;
+}
+.focus-exit:hover{background:rgba(255,255,255,.22);}
+.focus-main{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  background:#111;position:relative;overflow:hidden;
+}
+.focus-avatar{
+  width:120px;height:120px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:44px;font-weight:800;color:#fff;
+}
+.focus-strip{
+  height:88px;flex-shrink:0;display:flex;overflow-x:auto;
+  gap:5px;padding:5px 8px;background:rgba(0,0,0,.7);
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;
+}
+.focus-strip::-webkit-scrollbar{height:3px;}
+.focus-strip-thumb{
+  flex-shrink:0;width:130px;height:78px;border-radius:8px;
+  cursor:pointer;position:relative;overflow:hidden;
+  background:#1e2228;border:2px solid transparent;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .15s;
+}
+.focus-strip-thumb:hover{border-color:rgba(255,255,255,.4);}
+.focus-thumb-name{
+  position:absolute;bottom:4px;left:4px;color:#fff;font-size:9px;
+  background:rgba(0,0,0,.65);padding:2px 5px;border-radius:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 8px);
+}
+.focus-thumb-av{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;
+}
+
 /* ── Control bar ── */
 .control-bar{
   height:76px;flex-shrink:0;
@@ -234,10 +288,11 @@ body{
 .ctrl-end .ctrl-label{color:rgba(255,255,255,.8)!important;}
 .ctrl-sep{width:1px;height:40px;background:var(--border);margin:0 4px;}
 
-/* ── Responsive: mobile stacks vertically ── */
+/* ── Responsive: mobile stacks vertically — host top, participants below ── */
 @media(max-width:768px){
   .video-area{flex-direction:column;}
-  .host-pane{width:100%;height:42vh;flex-shrink:0;border-right:none;border-bottom:1px solid var(--border);}
+  .host-pane{order:1;width:100%;height:42vh;flex-shrink:0;border-right:none;border-bottom:1px solid var(--border);}
+  .participants-pane{order:2;border-right:none;}
   .video-grid{grid-template-columns:repeat(2,1fr);}
   .rm-title{display:none;}
   .ctrl-label{display:none;}
@@ -301,6 +356,20 @@ body{
       <div class="video-grid" id="videoGrid"></div>
     </div>
 
+  </div>
+
+  <!-- Focus / spotlight overlay (covers rm-main via position:absolute) -->
+  <div class="focus-overlay" id="focusOverlay">
+    <div class="focus-header">
+      <div class="focus-name" id="focusName"></div>
+      <button class="focus-exit" onclick="exitFocus()">
+        <i class="fa-solid fa-compress"></i> Exit Focus
+      </button>
+    </div>
+    <div class="focus-main">
+      <div class="focus-avatar" id="focusAvatar"></div>
+    </div>
+    <div class="focus-strip" id="focusStrip"></div>
   </div>
 </div>
 
@@ -367,14 +436,97 @@ const PARTICIPANTS = [
   ['Arthur','Griffin'],['Gloria','Diaz'],['Harold','Hayes'],['Doris','Myers'],
 ];
 
-// Palette for avatar backgrounds — varied, readable on dark
 const PALETTES = [
   '#1c75bc','#7c3aed','#0e7490','#b45309','#16a34a',
   '#dc2626','#d97706','#0284c7','#9333ea','#059669',
   '#c2410c','#1d4ed8','#6d28d9','#15803d','#b91c1c',
 ];
 
-// Randomly mute ~30% of participants for realism
+// ── Smart grid layout ────────────────────────────────────────────
+function updateGridLayout() {
+  const grid = document.getElementById('videoGrid');
+  if (!grid) return;
+  const n = grid.querySelectorAll('.ptile').length;
+  if (n === 0) return;
+
+  const w = window.innerWidth;
+  if (w <= 767) {
+    grid.style.gridTemplateColumns = `repeat(2, 1fr)`;
+    grid.classList.remove('scrollable');
+    grid.style.gridAutoRows = '1fr';
+    return;
+  }
+
+  const pane       = document.querySelector('.participants-pane');
+  const paneHeader = document.querySelector('.pane-header');
+  const paneW  = pane ? pane.offsetWidth : w * 0.5;
+  const paneH  = (pane ? pane.offsetHeight : (window.innerHeight - 56 - 76))
+                 - (paneHeader ? paneHeader.offsetHeight : 38);
+
+  const MIN_W   = 130;
+  const MIN_H   = 100;
+  const maxCols = Math.max(1, Math.floor(paneW / MIN_W));
+  const maxRows = Math.max(1, Math.floor(paneH  / MIN_H));
+
+  let bestCols = 1, bestArea = 0;
+  for (let c = 1; c <= maxCols; c++) {
+    const r = Math.ceil(n / c);
+    if (r > maxRows) continue;
+    const area = (paneW / c) * (paneH / r);
+    if (area > bestArea) { bestArea = area; bestCols = c; }
+  }
+
+  if (bestArea > 0) {
+    grid.style.gridTemplateColumns = `repeat(${bestCols}, 1fr)`;
+    grid.classList.remove('scrollable');
+    grid.style.gridAutoRows = '1fr';
+  } else {
+    const scrollCols = Math.min(6, maxCols);
+    grid.style.gridTemplateColumns = `repeat(${scrollCols}, 1fr)`;
+    grid.classList.add('scrollable');
+    grid.style.gridAutoRows = `minmax(${MIN_H}px, 14vh)`;
+  }
+}
+
+// ── Focus / spotlight overlay ────────────────────────────────────
+function openFocus(idx) {
+  const [fname, lname] = PARTICIPANTS[idx];
+  const color = PALETTES[idx % PALETTES.length];
+
+  document.getElementById('focusName').textContent   = `${fname} ${lname}`;
+  const av = document.getElementById('focusAvatar');
+  av.style.background = color;
+  av.textContent      = fname[0] + lname[0];
+
+  const strip = document.getElementById('focusStrip');
+  strip.innerHTML = '';
+  PARTICIPANTS.forEach(([fn, ln], i) => {
+    if (i === idx) return;
+    const c     = PALETTES[i % PALETTES.length];
+    const thumb = document.createElement('div');
+    thumb.className = 'focus-strip-thumb';
+    thumb.title     = `${fn} ${ln}`;
+    thumb.onclick   = () => openFocus(i);
+    thumb.innerHTML = `
+      <div class="focus-thumb-av" style="background:${c}">${fn[0]}${ln[0]}</div>
+      <div class="focus-thumb-name">${fn} ${ln}</div>
+    `;
+    strip.appendChild(thumb);
+  });
+
+  document.getElementById('focusOverlay').classList.add('active');
+}
+
+function exitFocus() {
+  document.getElementById('focusOverlay').classList.remove('active');
+}
+
+// Close on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') exitFocus();
+});
+
+// ── Build participant tiles ───────────────────────────────────────
 const grid = document.getElementById('videoGrid');
 
 PARTICIPANTS.forEach(([fname, lname], i) => {
@@ -385,9 +537,8 @@ PARTICIPANTS.forEach(([fname, lname], i) => {
 
   const tile = document.createElement('div');
   tile.className = 'ptile';
-
-  // Gradient tile background — slight variation
-  const hShift = (i * 17) % 40 - 20;
+  tile.title     = `${fname} ${lname} — click to focus`;
+  tile.onclick   = () => openFocus(i);
   tile.style.background = isCamOff
     ? `linear-gradient(135deg,#1a2036,#263348)`
     : `linear-gradient(135deg,#1e293b,#1a3050)`;
@@ -396,14 +547,10 @@ PARTICIPANTS.forEach(([fname, lname], i) => {
   avatar.className = 'ptile-avatar';
   avatar.style.background = color;
   avatar.textContent = initials;
-  // Show avatar only when cam is off
   avatar.style.display = isCamOff ? 'flex' : 'none';
 
-  // Simulated "video active" indicator when cam is on
-  let videoEl = null;
   if (!isCamOff) {
-    // Solid colored rectangle to represent an active video frame
-    videoEl = document.createElement('div');
+    const videoEl = document.createElement('div');
     videoEl.style.cssText = `
       position:absolute;inset:0;
       background:linear-gradient(135deg,${color}22,${color}08);
@@ -433,7 +580,11 @@ PARTICIPANTS.forEach(([fname, lname], i) => {
   grid.appendChild(tile);
 });
 
-// Live timer
+// Run smart grid after tiles are built
+updateGridLayout();
+window.addEventListener('resize', updateGridLayout);
+
+// ── Live timer ───────────────────────────────────────────────────
 let secs = 0;
 setInterval(() => {
   secs++;

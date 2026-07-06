@@ -179,8 +179,9 @@
   .room-header { padding: 6px 12px; flex-shrink: 0; }
   .room-title  { display: none; }
   .room-main   { flex: 1 !important; min-height: 0 !important; overflow: hidden; display: flex; }
-  .video-area  { flex: 1; width: 100%; min-height: 0; flex-direction: column; }
-  .host-pane   { height: 42vh; flex-shrink: 0; }
+  .video-area        { flex: 1; width: 100%; min-height: 0; flex-direction: column; }
+  .host-pane         { order: 1 !important; height: 42vh; flex-shrink: 0; }
+  .participants-pane { order: 2 !important; }
   .video-grid .video-tile { min-width: 0 !important; min-height: 0 !important; }
   .room-panels { position: fixed !important; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; z-index: 500; display: block; }
   .room-panels.panel-is-open { pointer-events: auto; }

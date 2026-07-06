@@ -770,27 +770,61 @@ function updateGridLayout() {
   const grid = document.getElementById('videoGrid');
   if (!grid) return;
 
-  // Only count remote tiles — local tile is now in the host pane
+  // Only remote tiles — local tile lives in the host pane
   const n = grid.querySelectorAll('.video-tile:not(.overflow-tile)').length;
-  const w = window.innerWidth;
 
-  // Participants pane: fixed 4 cols on desktop, 2 cols on mobile
-  const cols = w <= 767 ? (n <= 1 ? 1 : 2) : 4;
-
-  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-
-  // Scroll when more than 4×4 = 16 participants
-  if (n > 16) {
-    grid.classList.add('scrollable');
-    grid.style.gridAutoRows = 'minmax(120px, 16vh)';
-  } else {
-    grid.classList.remove('scrollable');
-    grid.style.gridAutoRows = '1fr';
-  }
-
-  // Show empty state when no remote participants
+  // Show / hide the "Waiting for participants" empty state
   const emptyEl = document.getElementById('participantsEmpty');
   if (emptyEl) emptyEl.classList.toggle('visible', n === 0);
+
+  const w = window.innerWidth;
+
+  // ── Mobile: simple layout, stack vertically ──────────────
+  if (w <= 767) {
+    grid.style.gridTemplateColumns = `repeat(${n <= 1 ? 1 : 2}, 1fr)`;
+    grid.classList.remove('scrollable');
+    grid.style.gridAutoRows = '1fr';
+    return;
+  }
+
+  if (n === 0) return;
+
+  // ── Desktop: calculate optimal cols to maximise tile area ─
+  // Use actual pane dimensions for accuracy (panel may be open)
+  const pane   = document.querySelector('.participants-pane');
+  const paneW  = pane ? pane.offsetWidth  : w * 0.5;
+  const paneH  = window.innerHeight - 56 - 76; // subtract header + ctrl bar
+
+  const MIN_W  = 130; // px — smallest comfortable tile width
+  const MIN_H  = 100; // px — smallest comfortable tile height
+  const maxCols = Math.max(1, Math.floor(paneW / MIN_W));
+  const maxRows = Math.max(1, Math.floor(paneH / MIN_H));
+
+  // Try every column count; pick the one that maximises tile area
+  // while still fitting all tiles on screen without scrolling
+  let bestCols = 1, bestArea = 0;
+  for (let c = 1; c <= maxCols; c++) {
+    const r = Math.ceil(n / c);
+    if (r > maxRows) continue;           // would need to scroll
+    const area = (paneW / c) * (paneH / r);
+    if (area > bestArea) { bestArea = area; bestCols = c; }
+  }
+
+  const fitsOnScreen = bestArea > 0;
+
+  if (fitsOnScreen) {
+    // All participants fit — fill the pane height with equal-size tiles
+    grid.style.gridTemplateColumns = `repeat(${bestCols}, 1fr)`;
+    grid.classList.remove('scrollable');
+    grid.style.gridAutoRows = '1fr';
+  } else {
+    // Too many participants: fixed tile size + vertical scrollbar
+    // Use as many columns as physically fit at min width (cap at 6)
+    const scrollCols = Math.min(6, maxCols);
+    grid.style.gridTemplateColumns = `repeat(${scrollCols}, 1fr)`;
+    grid.classList.add('scrollable');
+    grid.style.gridAutoRows = `minmax(${MIN_H}px, 14vh)`;
+  }
 }
 
 /* ── Spotlight / Focus mode ──────────────────────────────── */
