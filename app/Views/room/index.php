@@ -292,6 +292,10 @@
 <div id="reconnectBanner" class="reconnect-banner">
   <div class="reconnect-spinner"></div>
   <span id="reconnectMsg">Reconnecting…</span>
+  <a id="reconnectRefreshBtn" href="javascript:location.reload()" style="display:none;
+     margin-left:12px;padding:4px 12px;background:rgba(255,255,255,.18);
+     color:#fff;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;
+     white-space:nowrap;">Refresh Page</a>
 </div>
 
 <!-- Peer reconnecting banner (shown when a remote participant loses connectivity) -->
@@ -1071,19 +1075,21 @@ function toggleRoomTheme() {
   });
 })();
 </script>
-<!-- Image Lightbox — in-page viewer keeps WebRTC alive on mobile -->
-<div id="imgLightbox" style="display:none;position:fixed;inset:0;z-index:9000;
-     background:rgba(0,0,0,.92);align-items:center;justify-content:center;flex-direction:column;"
-     onclick="if(event.target===this)closeImgLightbox()">
-  <button onclick="closeImgLightbox()" style="position:absolute;top:16px;right:16px;
-      background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:50%;
-      width:40px;height:40px;font-size:18px;cursor:pointer;display:flex;
-      align-items:center;justify-content:center;z-index:1;">
+<!-- Image Lightbox — in-page gallery keeps WebRTC alive on mobile -->
+<div id="imgLightbox" class="img-lightbox"
+     onclick="if(event.target===this)closeImgLightbox()"
+     ontouchstart="_lbTouchStart(event)" ontouchend="_lbTouchEnd(event)">
+  <button class="img-lb-close" onclick="closeImgLightbox()" aria-label="Close">
     <i class="fa-solid fa-xmark"></i>
   </button>
-  <img id="imgLightboxImg" src="" alt=""
-       style="max-width:94vw;max-height:88vh;object-fit:contain;border-radius:8px;
-              touch-action:pinch-zoom;">
+  <span id="imgLightboxCounter" class="img-lb-counter"></span>
+  <button id="imgLightboxPrev" class="img-lb-nav img-lb-prev" onclick="prevImgLightbox()" aria-label="Previous">
+    <i class="fa-solid fa-chevron-left"></i>
+  </button>
+  <img id="imgLightboxImg" src="" alt="" class="img-lb-img">
+  <button id="imgLightboxNext" class="img-lb-nav img-lb-next" onclick="nextImgLightbox()" aria-label="Next">
+    <i class="fa-solid fa-chevron-right"></i>
+  </button>
 </div>
 
 <script src="<?= base_url('js/app.js') ?>"></script>

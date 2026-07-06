@@ -32,6 +32,9 @@ let   _typingTimeout = null;
 const _chatLog     = [];             // for export transcript
 const _polls       = {};             // pollId → { question, options[], voted }
 let   _pollCounter = 0;
+// Image gallery — all images shared in chat, for lightbox traversal
+const _chatImages  = [];             // { src, name } — appended as images arrive
+let   _imgLightboxIdx = 0;
 
 /* ── Init ──────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1042,7 +1045,16 @@ function appendChatMessage(socketId, senderName, message, timestamp, isOwn, file
     bodyHtml += `<div class="chat-msg-text">${linkifyText(message)}</div>`;
   }
   if (file) {
-    bodyHtml += buildFileHtml(file);
+    const isImage = file.type?.startsWith('image/');
+    if (isImage) {
+      // Register in gallery so the lightbox can traverse all chat images
+      const imgIdx = _chatImages.push({ src: file.url, name: file.name }) - 1;
+      bodyHtml += `<img src="${file.url}" class="chat-img-preview"
+        onclick="openImgLightbox(${imgIdx})" alt="${escapeHtml(file.name)}"
+        data-img-idx="${imgIdx}">`;
+    } else {
+      bodyHtml += buildFileHtml(file);
+    }
   }
 
   item.innerHTML = `
@@ -1115,12 +1127,14 @@ function linkifyText(str) {
   }).join('');
 }
 
-/* ── Image Lightbox — keeps meeting connected on mobile ────── */
-function openImgLightbox(src) {
+/* ── Image Lightbox Gallery — keeps meeting connected on mobile ─ */
+// Opens the in-page gallery at `idx` (index into _chatImages[]).
+// Supports prev/next buttons, left/right arrow keys, and swipe on mobile.
+function openImgLightbox(idx) {
   const lb = document.getElementById('imgLightbox');
-  const img = document.getElementById('imgLightboxImg');
-  if (!lb || !img) { window.open(src, '_blank'); return; }
-  img.src = src;
+  if (!lb) return;
+  _imgLightboxIdx = Math.max(0, Math.min(idx, _chatImages.length - 1));
+  _renderImgLightbox();
   lb.style.display = 'flex';
   document.addEventListener('keydown', _lbKeyClose);
 }
@@ -1131,7 +1145,39 @@ function closeImgLightbox() {
   document.removeEventListener('keydown', _lbKeyClose);
 }
 
-function _lbKeyClose(e) { if (e.key === 'Escape') closeImgLightbox(); }
+function prevImgLightbox() {
+  if (_imgLightboxIdx > 0) { _imgLightboxIdx--; _renderImgLightbox(); }
+}
+
+function nextImgLightbox() {
+  if (_imgLightboxIdx < _chatImages.length - 1) { _imgLightboxIdx++; _renderImgLightbox(); }
+}
+
+function _renderImgLightbox() {
+  const entry = _chatImages[_imgLightboxIdx];
+  if (!entry) return;
+  const img     = document.getElementById('imgLightboxImg');
+  const counter = document.getElementById('imgLightboxCounter');
+  const prev    = document.getElementById('imgLightboxPrev');
+  const next    = document.getElementById('imgLightboxNext');
+  if (img)     img.src = entry.src;
+  if (counter) counter.textContent = `${_imgLightboxIdx + 1} / ${_chatImages.length}`;
+  if (prev)    prev.disabled = (_imgLightboxIdx <= 0);
+  if (next)    next.disabled = (_imgLightboxIdx >= _chatImages.length - 1);
+}
+
+let _lbTouchStartX = 0;
+function _lbTouchStart(e) { _lbTouchStartX = e.touches[0]?.clientX ?? 0; }
+function _lbTouchEnd(e) {
+  const dx = (e.changedTouches[0]?.clientX ?? 0) - _lbTouchStartX;
+  if (Math.abs(dx) > 50) { dx > 0 ? prevImgLightbox() : nextImgLightbox(); }
+}
+
+function _lbKeyClose(e) {
+  if (e.key === 'Escape')      closeImgLightbox();
+  if (e.key === 'ArrowLeft')   prevImgLightbox();
+  if (e.key === 'ArrowRight')  nextImgLightbox();
+}
 
 /* ── Waiting Room ──────────────────────────────────────────── */
 function renderWaitingList(waiting) {

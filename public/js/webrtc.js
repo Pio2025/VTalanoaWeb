@@ -542,8 +542,12 @@ async function _sfuFetch(method, path, body = null) {
   const url = SFU_PROXY_BASE + path;
   console.log(`[SFU] ▶ ${method} ${url}`);
 
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 15000);
+
   const init = {
     method,
+    signal: ctrl.signal,
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${API_TOKEN}`,
@@ -556,8 +560,13 @@ async function _sfuFetch(method, path, body = null) {
     resp = await fetch(url, init);
     data = await resp.json().catch(() => ({}));
   } catch (netErr) {
-    console.error(`[SFU] ❌ Network error on ${method} ${url}:`, netErr.message);
+    const msg = netErr.name === 'AbortError'
+      ? `Timeout after 15 s on ${method} ${url}`
+      : netErr.message;
+    console.error(`[SFU] ❌ ${msg}`);
     throw netErr;
+  } finally {
+    clearTimeout(timer);
   }
 
   if (!resp.ok) {
