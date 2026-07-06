@@ -43,6 +43,9 @@ let _bgRunning   = false;
 let _bgAnimId    = null;
 let _bgStream    = null;    // canvas.captureStream() → outgoing video track
 
+// Hidden video element that always reads raw localStream (never the output)
+let _rawVid      = null;
+
 // Temporal coherence: persists across frames while a BG effect is active
 let _maskCanvas  = null;
 let _maskCtx     = null;
@@ -195,6 +198,20 @@ async function _bgStart() {
     return;
   }
 
+  // ── Raw camera source ─────────────────────────────────────────────────────
+  // A hidden video element permanently connected to the raw localStream.
+  // We MUST NOT read from localVid for pixel data: once _bgStream is assigned
+  // to localVid.srcObject (below), localVid shows the output canvas — reading
+  // from it creates a feedback loop (segmenter processes its own output → grey).
+  _rawVid = document.createElement('video');
+  _rawVid.srcObject = (typeof localStream !== 'undefined' && localStream)
+    ? localStream
+    : localVid.srcObject;
+  _rawVid.autoplay    = true;
+  _rawVid.playsInline = true;
+  _rawVid.muted       = true;
+  await _rawVid.play().catch(() => {});
+
   // ── Canvas setup ───────────────────────────────────────────────────────────
 
   // Low-res input canvas: downscaled camera frame sent to the neural network.
@@ -225,7 +242,7 @@ async function _bgStart() {
 
   let segBusy = false;
 
-  seg.onResults(({ image, segmentationMask }) => {
+  seg.onResults(({ segmentationMask }) => {
     if (!segmentationMask) { segBusy = false; return; }
 
     // ── 1. TEMPORAL MASK BLENDING ────────────────────────────────────────────
@@ -238,11 +255,11 @@ async function _bgStart() {
     // _maskCanvas now: 75 % new mask + 25 % previous mask
 
     // ── 2. PERSON ISOLATION with edge feathering ──────────────────────────
-    // Draw the full-res camera frame into personCanvas, then cut it using the
-    // low-res blended mask. Upscaling the small mask with blur(3px) applied at
-    // draw time gives soft, anti-aliased person edges (feathered silhouette).
+    // Draw the full-res raw camera into personCanvas, then cut using the mask.
+    // _rawVid always reads localStream directly — never the output canvas.
+    // Upscaling the small mask with blur(3px) feathers the person silhouette.
     personCtx.clearRect(0, 0, BG_W, BG_H);
-    personCtx.drawImage(image, 0, 0, BG_W, BG_H);          // full-res camera frame
+    personCtx.drawImage(_rawVid, 0, 0, BG_W, BG_H);        // full-res raw camera
     personCtx.globalCompositeOperation = 'destination-in';
     personCtx.filter = 'blur(3px)';                         // feather edges on upscale
     personCtx.drawImage(_maskCanvas, 0, 0, BG_W, BG_H);    // 256×144 → 640×360 upscale
@@ -251,10 +268,8 @@ async function _bgStart() {
 
     // ── 3. BACKGROUND LAYER ───────────────────────────────────────────────
     if (_bgEffect === 'blur') {
-      // CSS blur on canvas drawImage is GPU-composited in Chrome/Edge via
-      // the 2D renderer — the cheap part once the mask is known.
       outCtx.filter = 'blur(18px)';
-      outCtx.drawImage(image, 0, 0, BG_W, BG_H);
+      outCtx.drawImage(_rawVid, 0, 0, BG_W, BG_H);         // full-res raw camera, blurred
       outCtx.filter = 'none';
     } else if (_bgEffect === 'image' && _bgImage) {
       // Cover-fit the user's background image
@@ -265,7 +280,7 @@ async function _bgStart() {
       else            { sh = sw / cAr; sy = (_bgImage.naturalHeight - sh) / 2; }
       outCtx.drawImage(_bgImage, sx, sy, sw, sh, 0, 0, BG_W, BG_H);
     } else {
-      outCtx.drawImage(image, 0, 0, BG_W, BG_H);
+      outCtx.drawImage(_rawVid, 0, 0, BG_W, BG_H);
     }
 
     // ── 4. COMPOSITE PERSON ON BACKGROUND ─────────────────────────────────
@@ -281,13 +296,11 @@ async function _bgStart() {
   function tick() {
     if (!_bgRunning) return;
 
-    if (!segBusy && localVid.videoWidth > 0) {
+    if (!segBusy && _rawVid.videoWidth > 0) {
       segBusy = true;
-
-      // KEY OPTIMISATION: draw the camera to the tiny 256×144 canvas first,
-      // then send that to the segmenter. The network classifies ~37,000 pixels
-      // instead of ~230,000 — the same narrow task, at a fraction of the cost.
-      segCtx.drawImage(localVid, 0, 0, SEG_W, SEG_H);
+      // Downscale raw camera to 256×144 for the segmenter.
+      // Always read from _rawVid — never localVid (which shows the output).
+      segCtx.drawImage(_rawVid, 0, 0, SEG_W, SEG_H);
 
       seg.send({ image: segCanvas }).catch(err => {
         console.warn('[BG] send error:', err);
@@ -304,7 +317,8 @@ async function _bgStart() {
   const newTrack = _bgStream.getVideoTracks()[0];
   if (newTrack && typeof replaceVideoTrack === 'function') replaceVideoTrack(newTrack);
 
-  // Show processed output in local tile so the user sees the effect
+  // Show processed output in local tile — after this point localVid.srcObject
+  // is _bgStream, which is why _rawVid must be used for all pixel reads above.
   const localVidEl = document.getElementById('localVideo');
   if (localVidEl) localVidEl.srcObject = _bgStream;
 
@@ -318,6 +332,9 @@ function _bgStop() {
   _bgRunning = false;
   if (_bgAnimId !== null) { cancelAnimationFrame(_bgAnimId); _bgAnimId = null; }
   if (_bgStream) { _bgStream.getTracks().forEach(t => t.stop()); _bgStream = null; }
+
+  // Release the hidden raw camera video element
+  if (_rawVid) { _rawVid.srcObject = null; _rawVid = null; }
 
   // Discard the temporal mask — it will be re-primed next time _bgStart runs
   _maskCanvas = null;
