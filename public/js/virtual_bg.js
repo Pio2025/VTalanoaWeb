@@ -46,9 +46,15 @@ let _bgStream    = null;    // canvas.captureStream() → outgoing video track
 // Hidden video element that always reads raw localStream (never the output)
 let _rawVid      = null;
 
-// Temporal coherence: persists across frames while a BG effect is active
-let _maskCanvas  = null;
-let _maskCtx     = null;
+// Temporal coherence: two-canvas linear alpha interpolation.
+// _maskCanvas  = the blended mask used for compositing this frame.
+// _prevMaskCanvas = snapshot of the previous frame's mask (for the blend).
+// Using 'lighter' composite: result_alpha = 0.25*prev + 0.75*new exactly,
+// which lets old positions fade out when the person moves away.
+let _maskCanvas      = null;
+let _maskCtx         = null;
+let _prevMaskCanvas  = null;
+let _prevMaskCtx     = null;
 
 // Touch-up pipeline (active when BG effect is 'none')
 let _touchUpEnabled = false;
@@ -258,17 +264,20 @@ async function _bgStart() {
   segCanvas.width = SEG_W; segCanvas.height = SEG_H;
   const segCtx = segCanvas.getContext('2d');
 
-  // Temporal mask canvas (SEG_W × SEG_H): survives across frames.
-  // Each frame, the new mask is blended at SEG_BLEND weight over the previous
-  // mask, then the combined canvas is upscaled to the output resolution.
+  // Two-canvas temporal mask: current blend + previous-frame snapshot.
+  // 'lighter' composite gives exact linear alpha interpolation:
+  //   result_alpha = (1-SEG_BLEND)*prev_alpha + SEG_BLEND*new_alpha
+  // This lets old-position pixels fade out when the person moves, instead
+  // of staying stuck at alpha=255 (which leaks real camera onto virtual bg).
   _maskCanvas = document.createElement('canvas');
   _maskCanvas.width = SEG_W; _maskCanvas.height = SEG_H;
   _maskCtx = _maskCanvas.getContext('2d');
-  // Start transparent (alpha=0 everywhere). MediaPipe stores the mask in the
-  // alpha channel (person=opaque, background=transparent). If we primed with
-  // white (alpha=255), background pixels would also have alpha=255 and
-  // destination-in would never cut them out.
   _maskCtx.clearRect(0, 0, SEG_W, SEG_H);
+
+  _prevMaskCanvas = document.createElement('canvas');
+  _prevMaskCanvas.width = SEG_W; _prevMaskCanvas.height = SEG_H;
+  _prevMaskCtx = _prevMaskCanvas.getContext('2d');
+  _prevMaskCtx.clearRect(0, 0, SEG_W, SEG_H);
 
   // Person canvas: full-res camera frame, cut out by the blended+feathered mask
   const personCanvas = document.createElement('canvas');
@@ -285,14 +294,31 @@ async function _bgStart() {
   seg.onResults(({ segmentationMask }) => {
     if (!segmentationMask) { segBusy = false; return; }
 
-    // ── 1. TEMPORAL MASK BLENDING ────────────────────────────────────────────
-    // Blend the incoming mask (75%) over whatever was in _maskCanvas (25%).
-    // This smooths jitter between frames and lets us reuse the previous mask
-    // on frames when segmentation didn't run without visible artefacts.
+    // ── 1. TEMPORAL MASK BLENDING (proper linear alpha interpolation) ────────
+    // Step A: snapshot _maskCanvas → _prevMaskCanvas before overwriting it.
+    _prevMaskCtx.clearRect(0, 0, SEG_W, SEG_H);
+    _prevMaskCtx.globalCompositeOperation = 'copy';
+    _prevMaskCtx.drawImage(_maskCanvas, 0, 0);
+    _prevMaskCtx.globalCompositeOperation = 'source-over';
+
+    // Step B: clear the current mask canvas (reset to transparent).
+    _maskCtx.clearRect(0, 0, SEG_W, SEG_H);
+
+    // Step C: draw prev at (1-SEG_BLEND)=25% weight via source-over onto transparent.
+    //   result_alpha so far = 0.25 * prev_alpha
+    _maskCtx.globalAlpha = 1 - SEG_BLEND;
+    _maskCtx.drawImage(_prevMaskCanvas, 0, 0);
+    _maskCtx.globalAlpha = 1.0;
+
+    // Step D: add new mask at SEG_BLEND=75% weight using 'lighter' (additive).
+    //   'lighter' adds alpha values: result_alpha = 0.25*prev + 0.75*new_alpha
+    //   Old positions (new_alpha=0) fade to 25% of prev → exponential decay ✓
+    //   New positions (new_alpha=255) immediately appear at 75% → fade in ✓
+    _maskCtx.globalCompositeOperation = 'lighter';
     _maskCtx.globalAlpha = SEG_BLEND;
     _maskCtx.drawImage(segmentationMask, 0, 0, SEG_W, SEG_H);
     _maskCtx.globalAlpha = 1.0;
-    // _maskCanvas now: 75 % new mask + 25 % previous mask
+    _maskCtx.globalCompositeOperation = 'source-over';
 
     // ── 2. PERSON ISOLATION with edge feathering ──────────────────────────
     // Draw the full-res raw camera into personCanvas, then cut using the mask.
@@ -376,9 +402,9 @@ function _bgStop() {
   // Release the hidden raw camera video element
   if (_rawVid) { _rawVid.srcObject = null; _rawVid = null; }
 
-  // Discard the temporal mask — it will be re-primed next time _bgStart runs
-  _maskCanvas = null;
-  _maskCtx    = null;
+  // Discard temporal mask canvases — re-created next time _bgStart runs
+  _maskCanvas = null;     _maskCtx     = null;
+  _prevMaskCanvas = null; _prevMaskCtx = null;
 
   // Restore original camera stream to local tile and outgoing track
   if (typeof localStream !== 'undefined' && localStream) {
