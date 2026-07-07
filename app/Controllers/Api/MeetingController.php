@@ -130,11 +130,11 @@ class MeetingController extends BaseController
             return $this->response->setJSON(['error' => 'Only the host can start this meeting.'])->setStatusCode(403);
         }
         if ($meeting['status'] === 'Active') {
-            return $this->response->setJSON(['message' => 'Meeting is already active.', 'meeting_token' => $token]);
+            return $this->response->setJSON(['message' => 'Meeting is already active.', 'meeting_token' => $token, 'room_url' => base_url('room/' . $token)]);
         }
 
         $this->meetingService->startMeeting($meeting['meeting_id']);
-        return $this->response->setJSON(['message' => 'Meeting started.', 'meeting_token' => $token]);
+        return $this->response->setJSON(['message' => 'Meeting started.', 'meeting_token' => $token, 'room_url' => base_url('room/' . $token)]);
     }
 
     /** POST /api/meetings/:token/end */

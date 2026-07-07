@@ -36,7 +36,7 @@ $routes->group('auth', function ($routes) {
 });
 
 // API Auth — dedicated Api\AuthController (used by Flutter / native clients)
-$routes->group('api/auth', function ($routes) {
+$routes->group('api/auth', ['filter' => 'cors'], function ($routes) {
     $routes->post('register', 'Api\AuthController::register');
     $routes->post('login',    'Api\AuthController::login');
     $routes->post('logout',   'Api\AuthController::logout',  ['filter' => 'jwt']);

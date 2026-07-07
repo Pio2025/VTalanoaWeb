@@ -47,7 +47,11 @@ class Cors extends BaseConfig
          * E.g.:
          *   - ['https://\w+\.example\.com']
          */
-        'allowedOriginsPatterns' => [],
+        'allowedOriginsPatterns' => [
+            // Flutter web dev server (flutter run -d chrome) binds a random port.
+            'http://localhost:\d+',
+            'http://127\.0\.0\.1:\d+',
+        ],
 
         /**
          * Weather to send the `Access-Control-Allow-Credentials` header.
