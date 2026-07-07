@@ -120,6 +120,11 @@ class AuthController extends BaseController
     private function safeUser(array $user): array
     {
         unset($user['password']);
+        // MySQLi on this host returns numeric columns as strings (mysqlnd not
+        // available), which breaks strict-typed JSON consumers (e.g. Dart's
+        // `as num`). Cast the primary key explicitly so the API contract is
+        // deterministic regardless of driver behavior.
+        $user['user_id'] = (int) $user['user_id'];
         return $user;
     }
 
