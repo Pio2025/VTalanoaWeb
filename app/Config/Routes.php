@@ -88,6 +88,16 @@ $routes->group('api/meetings', ['filter' => 'jwt'], function ($routes) {
 
 $routes->post('api/meetings/(:segment)/join', 'Meeting\MeetingController::apiJoin/$1');
 
+// Flutter / native-app SFU proxy — scoped to a meeting token, JWT-protected
+// Mirrors /sfu-proxy/* but lives under /api/meetings/:token/sfu-proxy/* so
+// the Flutter client can use a single base URL pattern.
+$routes->group('api/meetings/(:segment)/sfu-proxy', ['filter' => 'jwt'], function ($routes) {
+    $routes->post('sessions/new',                   'Api\SfuProxyController::newSession/$1');
+    $routes->post('sessions/(:segment)/tracks/new', 'Api\SfuProxyController::newTracks/$1/$2');
+    $routes->put('sessions/(:segment)/renegotiate', 'Api\SfuProxyController::renegotiate/$1/$2');
+    $routes->put('sessions/(:segment)/tracks/close','Api\SfuProxyController::closeTracks/$1/$2');
+});
+
 // Cloudflare Realtime SFU proxy (keeps App Secret server-side)
 $routes->group('sfu-proxy', ['filter' => 'jwt'], function ($routes) {
     $routes->post('sessions/new',                          'SfuProxyController::newSession');
