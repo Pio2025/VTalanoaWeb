@@ -35,15 +35,16 @@ $routes->group('auth', function ($routes) {
     $routes->post('unlink/(:alpha)', 'Auth\SocialAuthController::unlink/$1', ['filter' => 'jwt']);
 });
 
-// API Auth
+// API Auth — dedicated Api\AuthController (used by Flutter / native clients)
 $routes->group('api/auth', function ($routes) {
-    $routes->post('register', 'Auth\AuthController::apiRegister');
-    $routes->post('login', 'Auth\AuthController::apiLogin');
-    $routes->post('logout', 'Auth\AuthController::apiLogout', ['filter' => 'jwt']);
-    $routes->post('forgot-password', 'Auth\AuthController::apiForgotPassword');
-    $routes->post('reset-password/(:alphanum)', 'Auth\AuthController::apiResetPassword/$1');
-    $routes->get('me', 'Auth\AuthController::me', ['filter' => 'jwt']);
-    $routes->get('verify', 'Auth\AuthController::verify');
+    $routes->post('register', 'Api\AuthController::register');
+    $routes->post('login',    'Api\AuthController::login');
+    $routes->post('logout',   'Api\AuthController::logout',  ['filter' => 'jwt']);
+    $routes->get('me',        'Api\AuthController::me',      ['filter' => 'jwt']);
+    // Password-reset flows (web deep-link token; web controller handles email send)
+    $routes->post('forgot-password',              'Auth\AuthController::apiForgotPassword');
+    $routes->post('reset-password/(:alphanum)',   'Auth\AuthController::apiResetPassword/$1');
+    $routes->get('verify',                        'Auth\AuthController::verify');
 });
 
 // Dashboard (protected)
@@ -65,28 +66,29 @@ $routes->get('room/(:segment)', 'Meeting\MeetingController::roomPage/$1', ['filt
 $routes->get('profile', 'Auth\AuthController::profilePage', ['filter' => 'jwt']);
 $routes->post('profile', 'Auth\AuthController::updateProfile', ['filter' => 'jwt']);
 
-// API Meetings
+// API Meetings — dedicated Api\MeetingController (used by Flutter / native clients)
 $routes->group('api/meetings', ['filter' => 'jwt'], function ($routes) {
-    $routes->get('resolve/(:segment)', 'Meeting\MeetingController::apiResolve/$1');
-    $routes->get('/', 'Meeting\MeetingController::apiList');
-    $routes->post('/', 'Meeting\MeetingController::apiCreate');
-    $routes->get('(:segment)', 'Meeting\MeetingController::apiGet/$1');
-    $routes->put('(:segment)', 'Meeting\MeetingController::apiUpdate/$1');
-    $routes->delete('(:segment)', 'Meeting\MeetingController::apiDelete/$1');
-    $routes->post('(:segment)/start', 'Meeting\MeetingController::apiStart/$1');
-    $routes->post('(:segment)/end', 'Meeting\MeetingController::apiEnd/$1');
-    $routes->get('(:segment)/participants', 'Meeting\ParticipantController::apiList/$1');
-    $routes->post('(:segment)/admit/(:num)', 'Meeting\ParticipantController::apiAdmit/$1/$2');
-    $routes->post('(:segment)/remove/(:num)', 'Meeting\ParticipantController::apiRemove/$1/$2');
-    $routes->post('(:segment)/mute/(:num)', 'Meeting\ParticipantController::apiMute/$1/$2');
-    $routes->post('(:segment)/invite', 'Meeting\InvitationController::apiSend/$1');
-    $routes->get('(:segment)/recordings', 'Meeting\RecordingController::apiList/$1');
-    $routes->post('(:segment)/recordings', 'Meeting\RecordingController::apiCreate/$1');
-    $routes->patch('(:segment)/recordings/(:num)', 'Meeting\RecordingController::apiStop/$1/$2');
-    $routes->post('(:segment)/recordings/stop', 'Meeting\RecordingController::apiStopLatest/$1');
+    // Must be registered before (:segment) to avoid ambiguity
+    $routes->get('resolve/(:segment)',  'Api\MeetingController::resolve/$1');
+    $routes->get('/',                   'Api\MeetingController::index');
+    $routes->post('/',                  'Api\MeetingController::create');
+    $routes->get('(:segment)',          'Api\MeetingController::show/$1');
+    $routes->put('(:segment)',          'Api\MeetingController::update/$1');
+    $routes->delete('(:segment)',       'Api\MeetingController::destroy/$1');
+    $routes->post('(:segment)/start',   'Api\MeetingController::start/$1');
+    $routes->post('(:segment)/end',     'Api\MeetingController::end/$1');
+    $routes->post('(:segment)/join',    'Api\MeetingController::join/$1');
+    // Participant & room management (existing controllers)
+    $routes->get('(:segment)/participants',          'Meeting\ParticipantController::apiList/$1');
+    $routes->post('(:segment)/admit/(:num)',         'Meeting\ParticipantController::apiAdmit/$1/$2');
+    $routes->post('(:segment)/remove/(:num)',        'Meeting\ParticipantController::apiRemove/$1/$2');
+    $routes->post('(:segment)/mute/(:num)',          'Meeting\ParticipantController::apiMute/$1/$2');
+    $routes->post('(:segment)/invite',               'Meeting\InvitationController::apiSend/$1');
+    $routes->get('(:segment)/recordings',            'Meeting\RecordingController::apiList/$1');
+    $routes->post('(:segment)/recordings',           'Meeting\RecordingController::apiCreate/$1');
+    $routes->patch('(:segment)/recordings/(:num)',   'Meeting\RecordingController::apiStop/$1/$2');
+    $routes->post('(:segment)/recordings/stop',      'Meeting\RecordingController::apiStopLatest/$1');
 });
-
-$routes->post('api/meetings/(:segment)/join', 'Meeting\MeetingController::apiJoin/$1');
 
 // Flutter / native-app SFU proxy — scoped to a meeting token, JWT-protected
 // Mirrors /sfu-proxy/* but lives under /api/meetings/:token/sfu-proxy/* so
