@@ -37,6 +37,16 @@ class JWTFilter implements FilterInterface
             return $this->unauthorized($request);
         }
 
+        // 2a. Guest room token (issued by the API guest-join branch — no DB row)
+        if (!empty($decoded->is_guest)) {
+            session()->set('guest_user', [
+                'is_guest'   => true,
+                'guest_id'   => $decoded->guest_id   ?? null,
+                'guest_name' => $decoded->guest_name ?? null,
+            ]);
+            return null;
+        }
+
         $userModel = new UserModel();
         $user      = $userModel->find($decoded->user_id ?? 0);
 

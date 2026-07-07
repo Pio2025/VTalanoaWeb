@@ -23,10 +23,21 @@ class MeetingController extends BaseController
     /** GET /api/meetings */
     public function index(): mixed
     {
-        $user     = session()->get('auth_user');
-        $page     = max(1, (int) ($this->request->getGet('page') ?? 1));
-        $meetings = $this->meetingModel->getUserMeetings($user['user_id'], $page, 20);
-        return $this->response->setJSON(['data' => $meetings, 'page' => $page]);
+        $user    = session()->get('auth_user');
+        $page    = max(1, (int) ($this->request->getGet('page') ?? 1));
+        $perPage = (int) ($this->request->getGet('per_page') ?? 20);
+        $perPage = max(1, min(50, $perPage));
+
+        $meetings = $this->meetingModel->getUserMeetings($user['user_id'], $page, $perPage);
+        $pager    = $this->meetingModel->pager;
+
+        return $this->response->setJSON([
+            'data'     => $meetings,
+            'page'     => $page,
+            'per_page' => $perPage,
+            'total'    => $pager->getTotal(),
+            'has_more' => $page < $pager->getPageCount(),
+        ]);
     }
 
     /** POST /api/meetings */
