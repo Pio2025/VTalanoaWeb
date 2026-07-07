@@ -67,7 +67,7 @@ $routes->get('profile', 'Auth\AuthController::profilePage', ['filter' => 'jwt'])
 $routes->post('profile', 'Auth\AuthController::updateProfile', ['filter' => 'jwt']);
 
 // API Meetings — dedicated Api\MeetingController (used by Flutter / native clients)
-$routes->group('api/meetings', ['filter' => 'jwt'], function ($routes) {
+$routes->group('api/meetings', ['filter' => ['cors', 'jwt']], function ($routes) {
     // Must be registered before (:segment) to avoid ambiguity
     $routes->get('resolve/(:segment)',  'Api\MeetingController::resolve/$1');
     $routes->get('/',                   'Api\MeetingController::index');
@@ -93,7 +93,7 @@ $routes->group('api/meetings', ['filter' => 'jwt'], function ($routes) {
 // Flutter / native-app SFU proxy — scoped to a meeting token, JWT-protected
 // Mirrors /sfu-proxy/* but lives under /api/meetings/:token/sfu-proxy/* so
 // the Flutter client can use a single base URL pattern.
-$routes->group('api/meetings/(:segment)/sfu-proxy', ['filter' => 'jwt'], function ($routes) {
+$routes->group('api/meetings/(:segment)/sfu-proxy', ['filter' => ['cors', 'jwt']], function ($routes) {
     $routes->post('sessions/new',                   'Api\SfuProxyController::newSession/$1');
     $routes->post('sessions/(:segment)/tracks/new', 'Api\SfuProxyController::newTracks/$1/$2');
     $routes->put('sessions/(:segment)/renegotiate', 'Api\SfuProxyController::renegotiate/$1/$2');
@@ -114,7 +114,7 @@ $routes->group('sfu-proxy', ['filter' => 'jwt'], function ($routes) {
 $routes->get('workspace', 'WorkspaceController::index', ['filter' => 'jwt']);
 
 // API — Team Chat
-$routes->group('api/workspace', ['filter' => 'jwt'], function ($routes) {
+$routes->group('api/workspace', ['filter' => ['cors', 'jwt']], function ($routes) {
     $routes->get('channels',                         'Workspace\ChatController::channels');
     $routes->post('channels',                        'Workspace\ChatController::createChannel');
     $routes->get('channels/(:num)/messages',         'Workspace\ChatController::messages/$1');
@@ -143,11 +143,11 @@ $routes->group('api/workspace', ['filter' => 'jwt'], function ($routes) {
 });
 
 // API AI Companion
-$routes->post('api/ai/chat', 'AiController::chat', ['filter' => 'jwt']);
+$routes->post('api/ai/chat', 'AiController::chat', ['filter' => ['cors', 'jwt']]);
 
 // API Chat
-$routes->post('api/chat/upload', 'Meeting\ChatController::apiUpload', ['filter' => 'jwt']);
-$routes->group('api/chat', ['filter' => 'jwt'], function ($routes) {
+$routes->post('api/chat/upload', 'Meeting\ChatController::apiUpload', ['filter' => ['cors', 'jwt']]);
+$routes->group('api/chat', ['filter' => ['cors', 'jwt']], function ($routes) {
     $routes->post('(:segment)', 'Meeting\ChatController::apiStore/$1');
     $routes->get('(:segment)', 'Meeting\ChatController::apiList/$1');
 });
