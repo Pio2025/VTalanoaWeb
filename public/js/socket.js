@@ -7,9 +7,7 @@ function connectSocket() {
 
   socket = io(SIGNALING_URL, {
     auth: { token: API_TOKEN },
-    // Start with polling so corporate firewalls/proxies don't block the upgrade.
-    // Socket.IO will upgrade to WebSocket automatically once polling succeeds.
-    transports: ['polling', 'websocket'],
+    transports: ['websocket', 'polling'],
     timeout: 20000,
     reconnection: true,
     reconnectionAttempts: Infinity,
