@@ -4,6 +4,14 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
+// CORS preflight — browsers send an OPTIONS request before any cross-origin
+// POST/PUT/DELETE call. None of the routes below register the OPTIONS verb,
+// so without this catch-all, preflight requests 404 before the `cors`
+// filter (attached per-route below) ever gets a chance to run.
+$routes->options('(:any)', static function () {
+    return service('response');
+}, ['filter' => 'cors']);
+
 // Home
 $routes->get('/', 'Home::index');
 $routes->get('pricing', 'Home::pricing');
