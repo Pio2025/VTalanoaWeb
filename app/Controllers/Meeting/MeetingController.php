@@ -6,7 +6,6 @@ use App\Controllers\BaseController;
 use App\Models\MeetingModel;
 use App\Models\UserModel;
 use App\Services\MeetingService;
-use App\Services\EmailService;
 
 class MeetingController extends BaseController
 {
@@ -162,14 +161,6 @@ class MeetingController extends BaseController
 
         $meeting = $this->meetingService->createMeeting($user['user_id'], $data);
         $joinUrl = base_url('join/' . $meeting['meeting_token']);
-
-        try {
-            $hostName      = trim(($user['fname'] ?? '') . ' ' . ($user['lname'] ?? ''));
-            $plainPassword = $data['password'] ?? '';
-            (new EmailService())->sendMeetingCreated($user['email'], $hostName, $meeting, $joinUrl, $plainPassword);
-        } catch (\Throwable $e) {
-            log_message('error', '[MeetingController] Email on create failed: ' . $e->getMessage());
-        }
 
         return $this->response->setJSON([
             'meeting_uuid'  => $meeting['meeting_uuid'],

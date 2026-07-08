@@ -5,6 +5,7 @@ namespace App\Controllers\Api;
 use App\Controllers\BaseController;
 use App\Models\MeetingModel;
 use App\Services\AnalyticsService;
+use App\Services\EmailService;
 use App\Services\JWTService;
 use App\Services\MeetingService;
 
@@ -59,12 +60,20 @@ class MeetingController extends BaseController
         }
 
         $meeting = $this->meetingService->createMeeting($user['user_id'], $data);
+        $joinUrl = base_url('join/' . $meeting['meeting_token']);
+
+        try {
+            $hostName = trim(($user['fname'] ?? '') . ' ' . ($user['lname'] ?? ''));
+            (new EmailService())->sendMeetingCreated($user['email'], $hostName, $meeting, $joinUrl, $data['password'] ?? '');
+        } catch (\Throwable $e) {
+            log_message('error', '[Api\MeetingController] Email on create failed: ' . $e->getMessage());
+        }
 
         return $this->response->setJSON([
             'meeting'       => $meeting,
             'meeting_token' => $meeting['meeting_token'],
             'meeting_uuid'  => $meeting['meeting_uuid'],
-            'join_url'      => base_url('join/' . $meeting['meeting_token']),
+            'join_url'      => $joinUrl,
         ])->setStatusCode(201);
     }
 
