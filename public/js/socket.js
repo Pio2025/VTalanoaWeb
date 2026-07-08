@@ -18,7 +18,12 @@ function connectSocket() {
   socket.on('connect', () => {
     console.log('[Socket] Connected:', socket.id);
     socket.emit('join-room', {
-      meetingUuid: MEETING_UUID,
+      // Must match the identifier the Flutter app uses to join the same
+      // Socket.IO room (webrtc_service.dart always sends the meeting_token,
+      // not the 10-digit meeting_uuid) — otherwise a web participant and a
+      // mobile-app participant in the "same" meeting land in two different
+      // signaling-server rooms and never see each other.
+      meetingUuid: MEETING_TOKEN,
       userId: USER_ID,
       displayName: DISPLAY_NAME,
       photoUrl: (typeof USER_AVATAR !== 'undefined' && USER_AVATAR) ? USER_AVATAR : '',

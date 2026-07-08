@@ -243,6 +243,30 @@ class MeetingController extends BaseController
                 'is_guest'   => true,
             ]);
 
+            // Persist the guest identity + room token into the session. The
+            // browser's join page does a full-page navigation to /room/:token
+            // right after this (window.location.href = room_url), which can't
+            // carry an Authorization header — without this, the strict `jwt`
+            // filter on that route has nothing to authenticate the guest with
+            // and bounces them to /auth/login. Session state survives the
+            // navigation and satisfies both the filter and roomPage()'s own
+            // guest_user/nm_token lookups. Mobile/API clients are unaffected —
+            // they use the returned JSON token directly, not the session.
+            // Shape matches what app/Views/room/index.php expects of $user
+            // (fname/lname/profile_photo etc.), not just is_guest/guest_id.
+            session()->set('guest_user', [
+                'user_id'       => 0,
+                'guest_id'      => $guestId,
+                'fname'         => $guestName,
+                'lname'         => '',
+                'email'         => '',
+                'username'      => 'guest',
+                'user_status'   => 'Active',
+                'profile_photo' => null,
+                'is_guest'      => true,
+            ]);
+            session()->set('nm_token', $roomToken);
+
             return $this->response->setJSON([
                 'waiting'       => (bool) $meeting['waiting_room'],
                 'token'         => $roomToken,
