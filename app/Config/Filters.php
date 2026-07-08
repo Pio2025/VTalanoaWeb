@@ -35,6 +35,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'jwt'           => \App\Filters\JWTFilter::class,
+        'jwtOptional'   => \App\Filters\OptionalAuthFilter::class,
         'hostonly'      => \App\Filters\HostOnlyFilter::class,
     ];
 

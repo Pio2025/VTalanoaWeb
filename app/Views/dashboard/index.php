@@ -184,11 +184,7 @@
                     <label class="form-label">Meeting ID or Link</label>
                     <input type="text" id="joinMeetingId" class="form-control form-control-app"
                            placeholder="Enter meeting ID or paste invite link">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Password (if required)</label>
-                    <input type="password" id="joinPassword" class="form-control form-control-app"
-                           placeholder="Meeting password">
+                    <div class="form-text">You'll be asked for the meeting password on the next screen, if one is required.</div>
                 </div>
             </div>
             <div class="modal-footer">

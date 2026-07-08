@@ -247,6 +247,7 @@ class MeetingController extends BaseController
                 'waiting'       => (bool) $meeting['waiting_room'],
                 'token'         => $roomToken,
                 'meeting_token' => $token,
+                'room_url'      => base_url('room/' . $token),
                 'ice_servers'   => $this->iceServers(),
             ]);
         }
@@ -268,6 +269,7 @@ class MeetingController extends BaseController
             'waiting'       => $result['waiting'],
             'token'         => $roomToken,
             'meeting_token' => $token,
+            'room_url'      => base_url('room/' . $token),
             'ice_servers'   => $this->iceServers(),
         ]);
     }

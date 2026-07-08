@@ -74,6 +74,12 @@ $routes->get('room/(:segment)', 'Meeting\MeetingController::roomPage/$1', ['filt
 $routes->get('profile', 'Auth\AuthController::profilePage', ['filter' => 'jwt']);
 $routes->post('profile', 'Auth\AuthController::updateProfile', ['filter' => 'jwt']);
 
+// Meeting join — jwt is optional here since a first-time guest (no account,
+// no prior token) must be able to reach Api\MeetingController::join()'s own
+// guest-join branch, which is what establishes their identity/JWT. The
+// controller enforces its own password/display-name checks for guests.
+$routes->post('api/meetings/(:segment)/join', 'Api\MeetingController::join/$1', ['filter' => ['cors', 'jwtOptional']]);
+
 // API Meetings — dedicated Api\MeetingController (used by Flutter / native clients)
 $routes->group('api/meetings', ['filter' => ['cors', 'jwt']], function ($routes) {
     // Must be registered before (:segment) to avoid ambiguity
@@ -85,7 +91,6 @@ $routes->group('api/meetings', ['filter' => ['cors', 'jwt']], function ($routes)
     $routes->delete('(:segment)',       'Api\MeetingController::destroy/$1');
     $routes->post('(:segment)/start',   'Api\MeetingController::start/$1');
     $routes->post('(:segment)/end',     'Api\MeetingController::end/$1');
-    $routes->post('(:segment)/join',    'Api\MeetingController::join/$1');
     $routes->get('(:segment)/stats',    'Api\MeetingController::stats/$1');
     $routes->get('(:segment)/files',    'Meeting\FileController::apiFiles/$1');
     $routes->post('(:segment)/leave',   'Meeting\ParticipantController::apiLeave/$1');
