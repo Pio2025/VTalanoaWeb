@@ -246,6 +246,12 @@ function bindSocketEvents(sock) {
     renderParticipants();
   });
 
+  sock.on('host-denied', () => {
+    console.log('[ROOM] host-denied — another session is already hosting this meeting; demoting to participant');
+    _demoteFromHost();
+    showToast('Another session is already hosting this meeting — you\'ve joined as a participant.', 'default');
+  });
+
   sock.on('you-are-waiting', () => {
     console.log('[ROOM] you-are-waiting — showing waiting overlay');
     const overlay = document.getElementById('waitingOverlay');
@@ -1359,6 +1365,28 @@ function _showWaitingControls(show) {
     const el = document.getElementById(id);
     if (el) el.style.display = show ? '' : 'none';
   });
+}
+
+// Called when the server denies a claimed host status because another
+// session is already live-hosting this meeting — strips the host-only
+// controls that were rendered server-side from the static (and, in this
+// case, stale) user_id == host_user_id check.
+function _demoteFromHost() {
+  IS_HOST = false;
+  _showWaitingControls(false);
+  ['btnRecord', 'btnLock', 'btnBreakout', 'brRoomsBar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.querySelectorAll('#localTile .badge-host').forEach(el => el.remove());
+  const endLabel = document.querySelector('#btnEnd .ctrl-label');
+  if (endLabel) endLabel.textContent = 'Leave';
+  const endModalTitle  = document.getElementById('endModalTitle');
+  const endModalBody   = document.getElementById('endModalBody');
+  const endModalAction = document.getElementById('endModalAction');
+  if (endModalTitle)  endModalTitle.textContent  = 'Leave Meeting?';
+  if (endModalBody)   endModalBody.textContent   = 'You will be disconnected from the meeting.';
+  if (endModalAction) endModalAction.textContent = 'Leave';
 }
 
 /* ── Settings ──────────────────────────────────────────────── */

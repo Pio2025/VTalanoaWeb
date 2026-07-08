@@ -950,10 +950,10 @@
         <div class="modal-content modal-app">
             <div class="modal-body text-center p-4">
                 <div class="end-modal-icon"><i class="fa-solid fa-phone-slash"></i></div>
-                <h4 class="mb-2">
+                <h4 class="mb-2" id="endModalTitle">
                     <?= $user['user_id'] == $meeting['host_user_id'] ? 'End Meeting?' : 'Leave Meeting?' ?>
                 </h4>
-                <p class="text-muted mb-4">
+                <p class="text-muted mb-4" id="endModalBody">
                     <?= $user['user_id'] == $meeting['host_user_id']
                         ? 'This will end the meeting for everyone.'
                         : 'You will be disconnected from the meeting.' ?>
@@ -961,7 +961,7 @@
                 <div class="d-grid gap-2">
                     <button class="btn btn-danger btn-app" onclick="confirmEnd()">
                         <i class="fa-solid fa-phone-slash me-2"></i>
-                        <?= $user['user_id'] == $meeting['host_user_id'] ? 'End for All' : 'Leave' ?>
+                        <span id="endModalAction"><?= $user['user_id'] == $meeting['host_user_id'] ? 'End for All' : 'Leave' ?></span>
                     </button>
                     <button class="btn btn-ghost" data-bs-dismiss="modal">Stay</button>
                 </div>
@@ -979,7 +979,7 @@ const MEETING_TOKEN = '<?= esc($meeting['meeting_token']) ?>';
 const MEETING_ID    = <?= (int)$meeting['meeting_id'] ?>;
 const USER_ID       = <?= (int)$user['user_id'] ?>;
 const DISPLAY_NAME  = '<?= esc($user['fname'] . ' ' . $user['lname']) ?>';
-const IS_HOST       = <?= $user['user_id'] == $meeting['host_user_id'] ? 'true' : 'false' ?>;
+let IS_HOST         = <?= $user['user_id'] == $meeting['host_user_id'] ? 'true' : 'false' ?>;
 const HOST_USER_ID  = <?= (int)$meeting['host_user_id'] ?>;
 const WAITING_ROOM      = <?= !empty($meeting['waiting_room']) ? 'true' : 'false' ?>;
 const MAX_PARTICIPANTS  = <?= (int)($meeting['max_participants'] ?? 300) ?>;
