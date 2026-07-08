@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.vtalanoa.vtalanoa_app",
+      "sha256_cert_fingerprints": [
+        "2B:AC:A3:46:F3:7B:60:86:38:F0:E4:83:5E:01:E5:A7:57:56:51:C3:5C:4C:5E:DD:CB:03:96:90:00:0A:3D:F5"
+      ]
+    }
+  }
+]

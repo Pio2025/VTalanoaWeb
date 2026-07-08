@@ -74,16 +74,16 @@ $routes->get('room/(:segment)', 'Meeting\MeetingController::roomPage/$1', ['filt
 $routes->get('profile', 'Auth\AuthController::profilePage', ['filter' => 'jwt']);
 $routes->post('profile', 'Auth\AuthController::updateProfile', ['filter' => 'jwt']);
 
-// Meeting join — jwt is optional here since a first-time guest (no account,
-// no prior token) must be able to reach Api\MeetingController::join()'s own
-// guest-join branch, which is what establishes their identity/JWT. The
-// controller enforces its own password/display-name checks for guests.
-$routes->post('api/meetings/(:segment)/join', 'Api\MeetingController::join/$1', ['filter' => ['cors', 'jwtOptional']]);
+// Meeting join & resolve — jwt is optional here since a first-time guest (no
+// account, no prior token) must be able to resolve a numeric meeting ID and
+// reach Api\MeetingController::join()'s own guest-join branch, which is what
+// establishes their identity/JWT in the first place. The controller enforces
+// its own password/display-name checks for guests.
+$routes->post('api/meetings/(:segment)/join',    'Api\MeetingController::join/$1', ['filter' => ['cors', 'jwtOptional']]);
+$routes->get('api/meetings/resolve/(:segment)',  'Api\MeetingController::resolve/$1', ['filter' => ['cors', 'jwtOptional']]);
 
 // API Meetings — dedicated Api\MeetingController (used by Flutter / native clients)
 $routes->group('api/meetings', ['filter' => ['cors', 'jwt']], function ($routes) {
-    // Must be registered before (:segment) to avoid ambiguity
-    $routes->get('resolve/(:segment)',  'Api\MeetingController::resolve/$1');
     $routes->get('/',                   'Api\MeetingController::index');
     $routes->post('/',                  'Api\MeetingController::create');
     $routes->get('(:segment)',          'Api\MeetingController::show/$1');
