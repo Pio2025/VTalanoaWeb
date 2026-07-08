@@ -116,6 +116,7 @@ class MeetingService
             'user_id'    => $userId,
             'role'       => 'Attendee',
             'status'     => $status,
+            'joined_at'  => $status === 'Admitted' ? date('Y-m-d H:i:s') : null,
         ]);
 
         $participant = $this->participantModel->find($participantId);

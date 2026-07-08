@@ -19,13 +19,52 @@ class ParticipantController extends BaseController
 
     public function apiList(string $uuid): mixed
     {
+        $user    = session()->get('auth_user');
         $meeting = $this->meetingModel->findByToken($uuid);
+
         if (!$meeting) {
             return $this->response->setJSON(['error' => 'Not found'])->setStatusCode(404);
         }
+        if (!$user || (int)$meeting['host_user_id'] !== (int)$user['user_id']) {
+            return $this->response->setJSON(['error' => 'Forbidden'])->setStatusCode(403);
+        }
 
-        $participants = $this->participantModel->getByMeeting($meeting['meeting_id']);
-        return $this->response->setJSON(['data' => $participants]);
+        $page    = max(1, (int) ($this->request->getGet('page') ?? 1));
+        $perPage = (int) ($this->request->getGet('per_page') ?? 10);
+        $perPage = max(1, min(50, $perPage));
+
+        $participants = $this->participantModel->getByMeetingPaginated($meeting['meeting_id'], $page, $perPage);
+        $pager        = $this->participantModel->pager;
+
+        return $this->response->setJSON([
+            'data'     => $participants,
+            'page'     => $page,
+            'per_page' => $perPage,
+            'total'    => $pager->getTotal(),
+            'has_more' => $page < $pager->getPageCount(),
+        ]);
+    }
+
+    public function apiLeave(string $uuid): mixed
+    {
+        $user    = session()->get('auth_user');
+        $meeting = $this->meetingModel->findByToken($uuid);
+
+        if (!$meeting || !$user) {
+            return $this->response->setJSON(['error' => 'Not found'])->setStatusCode(404);
+        }
+
+        $participant = $this->participantModel->findByMeetingAndUser($meeting['meeting_id'], (int) $user['user_id']);
+        if (!$participant) {
+            return $this->response->setJSON(['error' => 'Not a participant of this meeting'])->setStatusCode(404);
+        }
+
+        $this->participantModel->update($participant['participant_id'], [
+            'status'  => 'Left',
+            'left_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->response->setJSON(['message' => 'Left meeting.']);
     }
 
     public function apiAdmit(string $uuid, int $participantId): mixed

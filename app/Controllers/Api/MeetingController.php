@@ -4,6 +4,7 @@ namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
 use App\Models\MeetingModel;
+use App\Services\AnalyticsService;
 use App\Services\JWTService;
 use App\Services\MeetingService;
 
@@ -11,11 +12,13 @@ class MeetingController extends BaseController
 {
     private MeetingModel $meetingModel;
     private MeetingService $meetingService;
+    private AnalyticsService $analyticsService;
 
     public function __construct()
     {
-        $this->meetingModel   = new MeetingModel();
-        $this->meetingService = new MeetingService();
+        $this->meetingModel     = new MeetingModel();
+        $this->meetingService   = new MeetingService();
+        $this->analyticsService = new AnalyticsService();
     }
 
     // ── Routes ────────────────────────────────────────────────────────────────
@@ -88,6 +91,22 @@ class MeetingController extends BaseController
             return $this->response->setJSON(['error' => 'Meeting not found.'])->setStatusCode(404);
         }
         return $this->response->setJSON(['data' => $meeting]);
+    }
+
+    /** GET /api/meetings/:token/stats */
+    public function stats(string $token): mixed
+    {
+        $user    = session()->get('auth_user');
+        $meeting = $this->meetingModel->findByToken($token);
+
+        if (!$meeting) {
+            return $this->response->setJSON(['error' => 'Meeting not found.'])->setStatusCode(404);
+        }
+        if ((int)$meeting['host_user_id'] !== (int)$user['user_id']) {
+            return $this->response->setJSON(['error' => 'Only the host can view meeting stats.'])->setStatusCode(403);
+        }
+
+        return $this->response->setJSON(['data' => $this->analyticsService->getStats($meeting)]);
     }
 
     /** PUT /api/meetings/:token */

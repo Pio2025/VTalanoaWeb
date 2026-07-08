@@ -47,4 +47,21 @@ class ParticipantModel extends Model
                     ->where('user_id', $userId)
                     ->first();
     }
+
+    public function getForStats(int $meetingId): array
+    {
+        return $this->where('meeting_id', $meetingId)
+                    ->whereIn('status', ['Admitted', 'Left'])
+                    ->findAll();
+    }
+
+    public function getByMeetingPaginated(int $meetingId, int $page, int $perPage): array
+    {
+        return $this->select('meeting_participants.*, users.fname, users.lname, users.profile_photo')
+                    ->join('users', 'users.user_id = meeting_participants.user_id', 'left')
+                    ->where('meeting_participants.meeting_id', $meetingId)
+                    ->whereIn('meeting_participants.status', ['Admitted', 'Left'])
+                    ->orderBy('meeting_participants.joined_at', 'ASC')
+                    ->paginate($perPage, 'default', $page);
+    }
 }

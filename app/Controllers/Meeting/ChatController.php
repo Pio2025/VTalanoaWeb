@@ -5,16 +5,19 @@ namespace App\Controllers\Meeting;
 use App\Controllers\BaseController;
 use App\Models\MeetingModel;
 use App\Models\ChatMessageModel;
+use App\Models\ChatAttachmentModel;
 
 class ChatController extends BaseController
 {
     private MeetingModel $meetingModel;
     private ChatMessageModel $chatModel;
+    private ChatAttachmentModel $attachmentModel;
 
     public function __construct()
     {
-        $this->meetingModel = new MeetingModel();
-        $this->chatModel    = new ChatMessageModel();
+        $this->meetingModel    = new MeetingModel();
+        $this->chatModel       = new ChatMessageModel();
+        $this->attachmentModel = new ChatAttachmentModel();
     }
 
     public function apiList(string $uuid): mixed
@@ -35,10 +38,11 @@ class ChatController extends BaseController
             return $this->response->setJSON(['error' => 'Not found'])->setStatusCode(404);
         }
 
-        $data    = $this->request->getJSON(true);
-        $message = trim(strip_tags($data['message'] ?? ''));
+        $data          = $this->request->getJSON(true);
+        $message       = trim(strip_tags($data['message'] ?? ''));
+        $attachmentUrl = $data['attachment_url'] ?? null;
 
-        if (empty($message)) {
+        if (empty($message) && empty($attachmentUrl)) {
             return $this->response->setJSON(['error' => 'Message cannot be empty'])->setStatusCode(422);
         }
 
@@ -51,6 +55,17 @@ class ChatController extends BaseController
             'recipient_id' => $data['recipient_id'] ?? null,
             'sent_at'      => date('Y-m-d H:i:s'),
         ]);
+
+        if (!empty($attachmentUrl)) {
+            $this->attachmentModel->insert([
+                'message_id' => $id,
+                'meeting_id' => $meeting['meeting_id'],
+                'file_url'   => $attachmentUrl,
+                'file_name'  => $data['attachment_name'] ?? basename((string) $attachmentUrl),
+                'mime_type'  => $data['attachment_mime'] ?? null,
+                'file_size'  => $data['attachment_size'] ?? null,
+            ]);
+        }
 
         return $this->response->setJSON(['message_id' => $id])->setStatusCode(201);
     }

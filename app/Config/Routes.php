@@ -86,6 +86,9 @@ $routes->group('api/meetings', ['filter' => ['cors', 'jwt']], function ($routes)
     $routes->post('(:segment)/start',   'Api\MeetingController::start/$1');
     $routes->post('(:segment)/end',     'Api\MeetingController::end/$1');
     $routes->post('(:segment)/join',    'Api\MeetingController::join/$1');
+    $routes->get('(:segment)/stats',    'Api\MeetingController::stats/$1');
+    $routes->get('(:segment)/files',    'Meeting\FileController::apiFiles/$1');
+    $routes->post('(:segment)/leave',   'Meeting\ParticipantController::apiLeave/$1');
     // Participant & room management (existing controllers)
     $routes->get('(:segment)/participants',          'Meeting\ParticipantController::apiList/$1');
     $routes->post('(:segment)/admit/(:num)',         'Meeting\ParticipantController::apiAdmit/$1/$2');
