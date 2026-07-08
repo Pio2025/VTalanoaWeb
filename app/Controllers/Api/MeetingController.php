@@ -231,11 +231,12 @@ class MeetingController extends BaseController
             if (!$guestName) {
                 return $this->response->setJSON(['error' => 'display_name is required for guest join.'])->setStatusCode(422);
             }
-            if (!$this->meetingService->verifyPassword($meeting, $password)) {
+            $guestId = 'guest_' . bin2hex(random_bytes(8));
+            $result  = $this->meetingService->joinAsGuest($meeting, $guestId, $guestName, $password);
+            if (!$result['success']) {
                 return $this->response->setJSON(['error' => 'Invalid meeting password.'])->setStatusCode(403);
             }
 
-            $guestId   = 'guest_' . bin2hex(random_bytes(8));
             $roomToken = $jwtSvc->generateToken([
                 'user_id'    => 0,
                 'guest_id'   => $guestId,
@@ -268,11 +269,12 @@ class MeetingController extends BaseController
             session()->set('nm_token', $roomToken);
 
             return $this->response->setJSON([
-                'waiting'       => (bool) $meeting['waiting_room'],
-                'token'         => $roomToken,
-                'meeting_token' => $token,
-                'room_url'      => base_url('room/' . $token),
-                'ice_servers'   => $this->iceServers(),
+                'waiting'        => (bool) $meeting['waiting_room'],
+                'token'          => $roomToken,
+                'meeting_token'  => $token,
+                'room_url'       => base_url('room/' . $token),
+                'ice_servers'    => $this->iceServers(),
+                'participant_id' => $result['participant']['participant_id'] ?? null,
             ]);
         }
 
@@ -290,11 +292,12 @@ class MeetingController extends BaseController
         ]);
 
         return $this->response->setJSON([
-            'waiting'       => $result['waiting'],
-            'token'         => $roomToken,
-            'meeting_token' => $token,
-            'room_url'      => base_url('room/' . $token),
-            'ice_servers'   => $this->iceServers(),
+            'waiting'        => $result['waiting'],
+            'token'          => $roomToken,
+            'meeting_token'  => $token,
+            'room_url'       => base_url('room/' . $token),
+            'ice_servers'    => $this->iceServers(),
+            'participant_id' => $result['participant']['participant_id'] ?? null,
         ]);
     }
 

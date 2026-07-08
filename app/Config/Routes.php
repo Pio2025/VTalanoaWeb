@@ -96,9 +96,12 @@ $routes->group('api/meetings', ['filter' => ['cors', 'jwt']], function ($routes)
     $routes->post('(:segment)/leave',   'Meeting\ParticipantController::apiLeave/$1');
     // Participant & room management (existing controllers)
     $routes->get('(:segment)/participants',          'Meeting\ParticipantController::apiList/$1');
-    $routes->post('(:segment)/admit/(:num)',         'Meeting\ParticipantController::apiAdmit/$1/$2');
-    $routes->post('(:segment)/remove/(:num)',        'Meeting\ParticipantController::apiRemove/$1/$2');
-    $routes->post('(:segment)/mute/(:num)',          'Meeting\ParticipantController::apiMute/$1/$2');
+    $routes->post('(:segment)/admit',                'Meeting\ParticipantController::apiAdmit/$1');
+    $routes->post('(:segment)/admit-all',            'Meeting\ParticipantController::apiAdmitAll/$1');
+    $routes->post('(:segment)/remove',               'Meeting\ParticipantController::apiRemove/$1');
+    $routes->post('(:segment)/drop-to-waiting',      'Meeting\ParticipantController::apiDropToWaiting/$1');
+    $routes->post('(:segment)/mute',                 'Meeting\ParticipantController::apiMute/$1');
+    $routes->post('(:segment)/video',                'Meeting\ParticipantController::apiVideo/$1');
     $routes->post('(:segment)/invite',               'Meeting\InvitationController::apiSend/$1');
     $routes->get('(:segment)/recordings',            'Meeting\RecordingController::apiList/$1');
     $routes->post('(:segment)/recordings',           'Meeting\RecordingController::apiCreate/$1');

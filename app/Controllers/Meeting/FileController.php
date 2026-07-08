@@ -4,17 +4,17 @@ namespace App\Controllers\Meeting;
 
 use App\Controllers\BaseController;
 use App\Models\MeetingModel;
-use App\Models\ChatAttachmentModel;
+use App\Models\MeetingMessageAttachmentModel;
 
 class FileController extends BaseController
 {
     private MeetingModel $meetingModel;
-    private ChatAttachmentModel $attachmentModel;
+    private MeetingMessageAttachmentModel $attachmentModel;
 
     public function __construct()
     {
         $this->meetingModel    = new MeetingModel();
-        $this->attachmentModel = new ChatAttachmentModel();
+        $this->attachmentModel = new MeetingMessageAttachmentModel();
     }
 
     public function apiFiles(string $uuid): mixed

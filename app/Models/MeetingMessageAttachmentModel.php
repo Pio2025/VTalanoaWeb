@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class ChatAttachmentModel extends Model
+class MeetingMessageAttachmentModel extends Model
 {
-    protected $table      = 'chat_attachments';
+    protected $table      = 'meeting_message_attachments';
     protected $primaryKey = 'attachment_id';
     protected $returnType = 'array';
 

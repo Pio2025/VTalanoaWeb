@@ -4,20 +4,23 @@ namespace App\Controllers\Meeting;
 
 use App\Controllers\BaseController;
 use App\Models\MeetingModel;
-use App\Models\ChatMessageModel;
-use App\Models\ChatAttachmentModel;
+use App\Models\MeetingMessageModel;
+use App\Models\MeetingMessageAttachmentModel;
+use App\Models\ParticipantModel;
 
 class ChatController extends BaseController
 {
     private MeetingModel $meetingModel;
-    private ChatMessageModel $chatModel;
-    private ChatAttachmentModel $attachmentModel;
+    private MeetingMessageModel $chatModel;
+    private MeetingMessageAttachmentModel $attachmentModel;
+    private ParticipantModel $participantModel;
 
     public function __construct()
     {
-        $this->meetingModel    = new MeetingModel();
-        $this->chatModel       = new ChatMessageModel();
-        $this->attachmentModel = new ChatAttachmentModel();
+        $this->meetingModel     = new MeetingModel();
+        $this->chatModel        = new MeetingMessageModel();
+        $this->attachmentModel  = new MeetingMessageAttachmentModel();
+        $this->participantModel = new ParticipantModel();
     }
 
     public function apiList(string $uuid): mixed
@@ -31,11 +34,14 @@ class ChatController extends BaseController
 
     public function apiStore(string $uuid): mixed
     {
-        $user    = session()->get('auth_user');
         $meeting = $this->meetingModel->findByToken($uuid);
-
         if (!$meeting) {
             return $this->response->setJSON(['error' => 'Not found'])->setStatusCode(404);
+        }
+
+        $sender = $this->resolveActor($meeting['meeting_id']);
+        if (!$sender) {
+            return $this->response->setJSON(['error' => 'Not a participant of this meeting'])->setStatusCode(403);
         }
 
         $data          = $this->request->getJSON(true);
@@ -47,13 +53,11 @@ class ChatController extends BaseController
         }
 
         $id = $this->chatModel->insert([
-            'meeting_id'   => $meeting['meeting_id'],
-            'sender_id'    => $user['user_id'],
-            'sender_name'  => $user['fname'] . ' ' . $user['lname'],
-            'message'      => $message,
-            'is_private'   => $data['is_private'] ?? 0,
-            'recipient_id' => $data['recipient_id'] ?? null,
-            'sent_at'      => date('Y-m-d H:i:s'),
+            'meeting_id' => $meeting['meeting_id'],
+            'sender_id'  => $sender['participant_id'],
+            'message'    => $message,
+            'is_private' => $data['is_private'] ?? 0,
+            'sent_at'    => date('Y-m-d H:i:s'),
         ]);
 
         if (!empty($attachmentUrl)) {
@@ -127,5 +131,19 @@ class ChatController extends BaseController
             'type' => $allowedExtMime[$ext],
             'size' => $fileSize,
         ])->setStatusCode(201);
+    }
+
+    /** Resolves the requesting caller's own participant row from their session identity. */
+    private function resolveActor(int $meetingId): ?array
+    {
+        $user = session()->get('auth_user');
+        if ($user) {
+            return $this->participantModel->findByMeetingAndUser($meetingId, (int) $user['user_id']);
+        }
+        $guest = session()->get('guest_user');
+        if (!empty($guest['is_guest']) && !empty($guest['guest_id'])) {
+            return $this->participantModel->findByMeetingAndGuest($meetingId, (string) $guest['guest_id']);
+        }
+        return null;
     }
 }

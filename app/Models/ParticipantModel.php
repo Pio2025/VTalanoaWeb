@@ -11,7 +11,7 @@ class ParticipantModel extends Model
     protected $returnType = 'array';
 
     protected $allowedFields = [
-        'meeting_id', 'user_id', 'guest_name', 'guest_email',
+        'meeting_id', 'user_id', 'guest_id', 'guest_name', 'guest_email',
         'role', 'status', 'joined_at', 'left_at', 'is_muted', 'is_video_off',
     ];
 
@@ -46,6 +46,24 @@ class ParticipantModel extends Model
         return $this->where('meeting_id', $meetingId)
                     ->where('user_id', $userId)
                     ->first();
+    }
+
+    public function findByMeetingAndGuest(int $meetingId, string $guestId): ?array
+    {
+        return $this->where('meeting_id', $meetingId)
+                    ->where('guest_id', $guestId)
+                    ->first();
+    }
+
+    /** Bulk-admit every Waiting participant in a meeting (used by "admit all"). */
+    public function admitAllWaiting(int $meetingId): int
+    {
+        $this->where('meeting_id', $meetingId)
+             ->where('status', 'Waiting')
+             ->set(['status' => 'Admitted', 'joined_at' => date('Y-m-d H:i:s')])
+             ->update();
+
+        return $this->db->affectedRows();
     }
 
     public function getForStats(int $meetingId): array

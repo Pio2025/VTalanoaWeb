@@ -122,4 +122,31 @@ class MeetingService
         $participant = $this->participantModel->find($participantId);
         return ['success' => true, 'participant' => $participant, 'waiting' => $status === 'Waiting'];
     }
+
+    /**
+     * Guest equivalent of joinMeeting(): no user_id/users row exists, so the
+     * participant is identified by guest_id (a fresh id minted per join) and
+     * guest_name instead.
+     */
+    public function joinAsGuest(array $meeting, string $guestId, string $guestName, ?string $password): array
+    {
+        if (!$this->verifyPassword($meeting, $password)) {
+            return ['success' => false, 'error' => 'Invalid meeting password'];
+        }
+
+        $status = $meeting['waiting_room'] ? 'Waiting' : 'Admitted';
+
+        $participantId = $this->participantModel->insert([
+            'meeting_id' => $meeting['meeting_id'],
+            'user_id'    => null,
+            'guest_id'   => $guestId,
+            'guest_name' => $guestName,
+            'role'       => 'Attendee',
+            'status'     => $status,
+            'joined_at'  => $status === 'Admitted' ? date('Y-m-d H:i:s') : null,
+        ]);
+
+        $participant = $this->participantModel->find($participantId);
+        return ['success' => true, 'participant' => $participant, 'waiting' => $status === 'Waiting'];
+    }
 }
