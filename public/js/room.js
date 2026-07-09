@@ -24,6 +24,11 @@ const participants = {};
 const raisedHands  = new Set();
 // Reconnecting peers: userId (string) → { displayName, timeoutId }
 const reconnectingPeers = {};
+// Set true once 'meeting-ended' is received, so subsequent peer-left events
+// (the host's own disconnect, and any participants redirected away) are
+// explained by that instead of being mistaken for a connectivity drop.
+let _meetingEnding = false;
+let _meetingEndingHostName = 'The host';
 // Typing state
 const _typingPeers = {};             // socketId → senderName
 let   _isTyping    = false;
@@ -369,19 +374,29 @@ function bindSocketEvents(sock) {
     updateParticipantCount();
   });
 
-  sock.on('peer-left', ({ socketId, displayName }) => {
-    console.log('[ROOM] peer-left:', socketId, displayName);
+  sock.on('peer-left', ({ socketId, displayName, intentional }) => {
+    console.log('[ROOM] peer-left:', socketId, displayName, '| intentional:', intentional);
     raisedHands.delete(socketId);
     _updateTypingIndicator(socketId, '', false);
 
     const pid = participants[socketId];
     const uid = pid?.userId ? String(pid.userId) : null;
-    if (uid && uid !== '0') {
+    const name = displayName || pid?.displayName || 'Participant';
+
+    if (_meetingEnding) {
+      // The host already ended the meeting — the "Meeting Ended" dialog
+      // explains this departure; don't imply it's a connectivity drop.
+      _flashBanner(`${_meetingEndingHostName} is ending the meeting…`);
+    } else if (intentional) {
+      // Explicit Leave / removed-by-host / dropped-to-waiting — not a drop.
+      _flashBanner(`${name} is leaving the meeting…`);
+      playSound('peer-left');
+    } else if (uid && uid !== '0') {
       // May be a connectivity drop — show reconnecting banner for 20 s
       const prev = reconnectingPeers[uid];
       if (prev) clearTimeout(prev.timeoutId);
       reconnectingPeers[uid] = {
-        displayName: displayName || pid?.displayName || 'Participant',
+        displayName: name,
         timeoutId: setTimeout(() => {
           delete reconnectingPeers[uid];
           _updateReconnectingBanner();
@@ -390,7 +405,7 @@ function bindSocketEvents(sock) {
       playSound('disconnect');
       _updateReconnectingBanner();
     } else {
-      showToast(`${displayName || 'A participant'} left`, 'default');
+      showToast(`${name} left`, 'default');
       playSound('peer-left');
     }
 
@@ -644,7 +659,9 @@ function bindSocketEvents(sock) {
     if (typeof handleWbState === 'function') handleWbState(data);
   });
 
-  sock.on('meeting-ended', () => {
+  sock.on('meeting-ended', ({ hostName } = {}) => {
+    _meetingEnding = true;
+    _meetingEndingHostName = hostName || 'The host';
     let secs = 10;
     Swal.fire({
       title: 'Meeting Ended',
@@ -763,6 +780,19 @@ function _updateReconnectingBanner() {
   if (!names.length) { banner.style.display = 'none'; return; }
   banner.style.display = 'flex';
   nameEl.textContent = names.join(', ') + (names.length === 1 ? ' is reconnecting…' : ' are reconnecting…');
+}
+
+// Reuses the same banner slot for a one-off message (intentional leave /
+// meeting ending) that isn't part of the persistent reconnectingPeers map.
+let _flashBannerTimeout = null;
+function _flashBanner(text, ms = 4000) {
+  const banner = document.getElementById('peerReconnectBanner');
+  const nameEl = document.getElementById('peerReconnectNames');
+  if (!banner || !nameEl) return;
+  banner.style.display = 'flex';
+  nameEl.textContent = text;
+  clearTimeout(_flashBannerTimeout);
+  _flashBannerTimeout = setTimeout(_updateReconnectingBanner, ms);
 }
 
 /* ── Typing indicator ───────────────────────────────────────── */
