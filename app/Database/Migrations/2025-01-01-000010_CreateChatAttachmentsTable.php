@@ -8,6 +8,12 @@ class CreateChatAttachmentsTable extends Migration
 {
     public function up(): void
     {
+        // Already exists on some environments (created manually alongside the
+        // chat_messages -> meeting_messages rename, before this migration existed).
+        if ($this->db->tableExists('meeting_message_attachments')) {
+            return;
+        }
+
         $this->forge->addField([
             'attachment_id' => ['type' => 'INT', 'unsigned' => true, 'auto_increment' => true],
             'message_id'    => ['type' => 'INT', 'unsigned' => true, 'null' => false],
