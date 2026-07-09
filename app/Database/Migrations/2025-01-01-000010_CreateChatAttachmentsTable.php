@@ -23,13 +23,13 @@ class CreateChatAttachmentsTable extends Migration
         $this->forge->addKey('attachment_id', true);
         $this->forge->addKey('message_id');
         $this->forge->addKey('meeting_id');
-        $this->forge->addForeignKey('message_id', 'chat_messages', 'message_id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('message_id', 'meeting_messages', 'message_id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('meeting_id', 'meetings', 'meeting_id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('chat_attachments');
+        $this->forge->createTable('meeting_message_attachments');
     }
 
     public function down(): void
     {
-        $this->forge->dropTable('chat_attachments', true);
+        $this->forge->dropTable('meeting_message_attachments', true);
     }
 }
