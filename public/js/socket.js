@@ -73,7 +73,7 @@ function connectSocket() {
   socket.on('session-replaced', () => {
     console.warn('[Socket] Session replaced by another connection');
     socket.io.reconnection(false);
-    _showReconnectBanner('You reconnected from another tab or device.', true);
+    _showReconnectBanner('This meeting was opened on another device or tab, so you’ve been disconnected here.', true);
   });
 
   return socket;
