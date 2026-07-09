@@ -415,6 +415,12 @@ function bindSocketEvents(sock) {
     updateParticipantCount();
   });
 
+  sock.on('cam-off-request', () => {
+    if (!camEnabled) return;
+    toggleCam();
+    showToast('The host turned off your camera.', 'default');
+  });
+
   sock.on('mute-request', () => {
     if (!micEnabled) return;
     toggleMic();
@@ -597,7 +603,9 @@ function bindSocketEvents(sock) {
   });
 
   sock.on('peer-cam-status', ({ socketId, isCamOff }) => {
+    if (participants[socketId]) participants[socketId].isCamOff = isCamOff;
     updateRemoteTileCamStatus(socketId, isCamOff);
+    renderParticipants();
   });
 
   sock.on('remote-transcript-segment', ({ speaker, text }) => {
@@ -1310,6 +1318,11 @@ function renderParticipants() {
               <button class="btn btn-xs btn-outline-secondary me-1" onclick="${p.isMuted ? `requestUnmute('${sid}')` : `muteParticipant('${sid}')`}" title="${p.isMuted ? 'Ask to unmute' : 'Mute'}">
                 <i class="fa-solid ${p.isMuted ? 'fa-microphone' : 'fa-microphone-slash'}"></i>
               </button>
+              ${!p.isCamOff ? `
+                <button class="btn btn-xs btn-outline-secondary me-1" onclick="requestCamOff('${sid}')" title="Turn off camera">
+                  <i class="fa-solid fa-video-slash"></i>
+                </button>
+              ` : ''}
               <button class="btn btn-xs btn-outline-warning me-1" onclick="dropParticipant('${sid}')" title="Move to waiting room">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i>
               </button>
@@ -1342,6 +1355,10 @@ function muteParticipant(socketId) {
 
 function requestUnmute(socketId) {
   emitSafe('unmute-request', { to: socketId });
+}
+
+function requestCamOff(socketId) {
+  emitSafe('cam-off-request', { to: socketId });
 }
 
 async function dropParticipant(socketId) {
