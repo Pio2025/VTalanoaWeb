@@ -430,6 +430,39 @@
 .chat-message-item.own { align-items: flex-end; }
 .chat-msg-time { font-size: 10px; color: var(--rm-text-3); }
 
+.chat-msg-row { display: flex; align-items: flex-end; gap: 4px; position: relative; }
+.chat-message-item.own .chat-msg-row { flex-direction: row-reverse; }
+.chat-react-trigger {
+  width: 22px; height: 22px; border-radius: 50%; border: none; padding: 0;
+  background: transparent; color: var(--rm-text-3); font-size: 12px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .15s, background .15s; flex-shrink: 0;
+}
+.chat-message-item:hover .chat-react-trigger { opacity: 1; }
+.chat-react-trigger:hover { background: var(--rm-btn); color: var(--rm-text); }
+
+.chat-reactions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.reaction-pill {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11px; line-height: 1; padding: 3px 6px; border-radius: 10px;
+  background: var(--rm-btn); border: 1px solid var(--rm-border); color: var(--rm-text-2);
+  cursor: pointer; transition: background .15s, border-color .15s;
+}
+.reaction-pill:hover { background: var(--rm-btn-hover); }
+.reaction-pill.mine { border-color: var(--rm-primary); background: var(--rm-primary-bg); color: var(--rm-primary); }
+
+.reaction-picker-mini {
+  position: absolute; bottom: calc(100% + 4px); z-index: 5;
+  display: flex; gap: 2px; padding: 4px 6px; border-radius: 10px;
+  background: var(--rm-panel, var(--rm-btn)); border: 1px solid var(--rm-border);
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+.reaction-picker-mini button {
+  border: none; background: none; font-size: 18px; line-height: 1;
+  padding: 3px; border-radius: 6px; cursor: pointer; transition: background .1s;
+}
+.reaction-picker-mini button:hover { background: var(--rm-btn); }
+
 .chat-input-area { padding: 10px 12px; box-sizing: border-box; }
 .chat-input-wrap {
   display: flex; gap: 5px; width: 100%; align-items: center;

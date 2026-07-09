@@ -37,6 +37,14 @@ let   _typingTimeout = null;
 const _chatLog     = [];             // for export transcript
 const _polls       = {};             // pollId → { question, options[], voted }
 let   _pollCounter = 0;
+// Reactions: messageId → { emoji → Set(socketId) }. Toggle-relay model: every
+// client (sender included) applies the exact same (socketId, messageId,
+// emoji) toggle locally and via the 'chat-reaction'/'chat-reaction-update'
+// relay, so all clients converge on the same aggregate without a server-side
+// source of truth (mirrors the existing ephemeral poll-vote relay).
+const _reactions   = {};
+let   _msgCounter  = 0;
+const _REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 // Image gallery — all images shared in chat, for lightbox traversal
 const _chatImages  = [];             // { src, name } — appended as images arrive
 let   _imgLightboxIdx = 0;
@@ -473,9 +481,9 @@ function bindSocketEvents(sock) {
     showToast('You have been moved back to the waiting room.', 'default');
   });
 
-  sock.on('chat-message', ({ socketId, senderName, message, timestamp, fileUrl, fileName, fileType, fileSize }) => {
+  sock.on('chat-message', ({ socketId, messageId, senderName, message, timestamp, fileUrl, fileName, fileType, fileSize }) => {
     _updateTypingIndicator(socketId, '', false); // clear typing when message arrives
-    appendChatMessage(socketId, senderName, message, timestamp, false, fileUrl ? { url: fileUrl, name: fileName, type: fileType, size: fileSize } : null);
+    appendChatMessage(socketId, senderName, message, timestamp, false, fileUrl ? { url: fileUrl, name: fileName, type: fileType, size: fileSize } : null, messageId);
     if (activePanel !== 'chat') {
       unreadChat++;
       playSound('chat');
@@ -600,6 +608,10 @@ function bindSocketEvents(sock) {
     if (!poll) return;
     if (poll.options[optionIndex]) poll.options[optionIndex].votes++;
     _updatePollCard(pollId);
+  });
+
+  sock.on('chat-reaction-update', ({ socketId, messageId, emoji }) => {
+    _applyReaction(messageId, emoji, socketId);
   });
 
   sock.on('peer-cam-status', ({ socketId, isCamOff }) => {
@@ -976,8 +988,9 @@ function sendChat() {
   const msg   = input?.value.trim();
   if (!msg) return;
 
-  emitSafe('chat-message', { message: msg });
-  appendChatMessage(null, DISPLAY_NAME + ' (You)', msg, new Date().toISOString(), true);
+  const messageId = `msg_${Date.now()}_${++_msgCounter}`;
+  emitSafe('chat-message', { messageId, message: msg });
+  appendChatMessage(null, DISPLAY_NAME + ' (You)', msg, new Date().toISOString(), true, null, messageId);
   input.value = '';
   // Dismiss virtual keyboard on mobile so iOS doesn't stay zoomed in after send
   if (window.matchMedia('(max-width: 768px)').matches) input.blur();
@@ -1046,7 +1059,9 @@ async function handleFileSelect(input) {
       return;
     }
 
+    const messageId = `msg_${Date.now()}_${++_msgCounter}`;
     emitSafe('chat-message', {
+      messageId,
       message:  '',
       fileUrl:  data.url,
       fileName: data.name,
@@ -1055,7 +1070,7 @@ async function handleFileSelect(input) {
     });
 
     appendChatMessage(null, DISPLAY_NAME + ' (You)', '', new Date().toISOString(), true,
-      { url: data.url, name: data.name, type: data.type, size: data.size });
+      { url: data.url, name: data.name, type: data.type, size: data.size }, messageId);
 
     showToast('File sent.', 'success');
   } catch (e) {
@@ -1067,7 +1082,7 @@ async function handleFileSelect(input) {
   input.value = '';
 }
 
-function appendChatMessage(socketId, senderName, message, timestamp, isOwn, file = null) {
+function appendChatMessage(socketId, senderName, message, timestamp, isOwn, file = null, messageId = null) {
   const container = document.getElementById('chatMessages');
   if (!container) return;
 
@@ -1083,6 +1098,7 @@ function appendChatMessage(socketId, senderName, message, timestamp, isOwn, file
 
   const item = document.createElement('div');
   item.className = 'chat-message-item' + (isOwn ? ' own' : '');
+  if (messageId) item.id = 'msg-' + messageId;
 
   let bodyHtml = '';
   if (message) {
@@ -1101,14 +1117,78 @@ function appendChatMessage(socketId, senderName, message, timestamp, isOwn, file
     }
   }
 
+  const reactBtnHtml = messageId ? `
+    <button class="chat-react-trigger" onclick="toggleReactPicker('${messageId}', this)" title="React">
+      <i class="fa-regular fa-face-smile"></i>
+    </button>` : '';
+
   item.innerHTML = `
     <div class="chat-msg-sender">${isOwn ? 'You' : escapeHtml(senderName)}</div>
-    ${bodyHtml}
+    <div class="chat-msg-row">
+      ${bodyHtml}
+      ${reactBtnHtml}
+    </div>
+    ${messageId ? `<div class="chat-reactions" id="reactions-${messageId}"></div>` : ''}
     <div class="chat-msg-time">${time}</div>
   `;
 
   container.appendChild(item);
   container.scrollTop = container.scrollHeight;
+}
+
+/* ── Reactions ─────────────────────────────────────────────── */
+function _applyReaction(messageId, emoji, socketId) {
+  if (!messageId || !emoji || !socketId) return;
+  const bucket = _reactions[messageId] || (_reactions[messageId] = {});
+  const set = bucket[emoji] || (bucket[emoji] = new Set());
+  if (set.has(socketId)) set.delete(socketId); else set.add(socketId);
+  if (set.size === 0) delete bucket[emoji];
+  _renderReactions(messageId);
+}
+
+function reactToMessage(messageId, emoji) {
+  _applyReaction(messageId, emoji, sock.id);
+  emitSafe('chat-reaction', { messageId, emoji });
+  document.getElementById('reactPicker-' + messageId)?.remove();
+}
+
+function _renderReactions(messageId) {
+  const el = document.getElementById('reactions-' + messageId);
+  if (!el) return;
+  const bucket = _reactions[messageId] || {};
+  const mine = sock?.id;
+  el.innerHTML = Object.entries(bucket)
+    .filter(([, set]) => set.size > 0)
+    .map(([emoji, set]) => `
+      <button class="reaction-pill${set.has(mine) ? ' mine' : ''}"
+              onclick="reactToMessage('${messageId}','${emoji}')">
+        ${emoji} <span>${set.size}</span>
+      </button>`)
+    .join('');
+}
+
+function toggleReactPicker(messageId, btn) {
+  const existing = document.getElementById('reactPicker-' + messageId);
+  if (existing) { existing.remove(); return; }
+  document.querySelectorAll('.reaction-picker-mini').forEach(p => p.remove());
+
+  const picker = document.createElement('div');
+  picker.className = 'reaction-picker-mini';
+  picker.id = 'reactPicker-' + messageId;
+  picker.innerHTML = _REACTION_EMOJIS
+    .map(em => `<button onclick="reactToMessage('${messageId}','${em}')">${em}</button>`)
+    .join('');
+  btn.closest('.chat-msg-row')?.appendChild(picker);
+
+  // Close on next outside click
+  setTimeout(() => {
+    document.addEventListener('click', function onDocClick(e) {
+      if (!picker.contains(e.target) && e.target !== btn) {
+        picker.remove();
+        document.removeEventListener('click', onDocClick);
+      }
+    });
+  }, 0);
 }
 
 function buildFileHtml(file) {
