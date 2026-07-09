@@ -66,8 +66,8 @@ class ChatController extends BaseController
                 'meeting_id' => $meeting['meeting_id'],
                 'file_url'   => $attachmentUrl,
                 'file_name'  => $data['attachment_name'] ?? basename((string) $attachmentUrl),
-                'mime_type'  => $data['attachment_mime'] ?? null,
-                'file_size'  => $data['attachment_size'] ?? null,
+                'mime_type'  => $data['attachment_mime'] ?? 'application/octet-stream',
+                'file_size'  => $data['attachment_size'] ?? 0,
             ]);
         }
 
