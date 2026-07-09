@@ -63,6 +63,19 @@ function connectSocket() {
     _showReconnectBanner('Could not reconnect.', true);
   });
 
+  // Server evicted this session because the same identity (host or
+  // participant) reconnected from another socket — e.g. this tab lost its
+  // connection long enough that a retry from the same device/another tab
+  // already took its seat in the meeting. Socket.IO does not auto-reconnect
+  // after a server-initiated disconnect, so this tab is now stale; stop
+  // retrying and tell the user plainly instead of showing a misleading
+  // "reconnecting…" banner forever.
+  socket.on('session-replaced', () => {
+    console.warn('[Socket] Session replaced by another connection');
+    socket.io.reconnection(false);
+    _showReconnectBanner('You reconnected from another tab or device.', true);
+  });
+
   return socket;
 }
 
