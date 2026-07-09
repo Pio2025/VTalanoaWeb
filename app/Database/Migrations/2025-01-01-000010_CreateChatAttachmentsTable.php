@@ -20,10 +20,10 @@ class CreateChatAttachmentsTable extends Migration
             'meeting_id'    => ['type' => 'INT', 'unsigned' => true, 'null' => false],
             'file_url'      => ['type' => 'VARCHAR', 'constraint' => 500, 'null' => false],
             'file_name'     => ['type' => 'VARCHAR', 'constraint' => 255, 'null' => false],
-            'mime_type'     => ['type' => 'VARCHAR', 'constraint' => 100, 'null' => true],
-            'file_size'     => ['type' => 'INT', 'unsigned' => true, 'null' => true],
-            'created_at'    => ['type' => 'TIMESTAMP', 'null' => true],
-            'updated_at'    => ['type' => 'TIMESTAMP', 'null' => true],
+            'mime_type'     => ['type' => 'VARCHAR', 'constraint' => 100, 'null' => false],
+            'file_size'     => ['type' => 'INT', 'null' => false],
+            'created_at'    => ['type' => 'TIMESTAMP', 'null' => false],
+            'updated_at'    => ['type' => 'TIMESTAMP', 'null' => false],
         ]);
 
         $this->forge->addKey('attachment_id', true);
