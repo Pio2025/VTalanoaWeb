@@ -2,4 +2,5 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home2/vbgwpgmy/public_html/vtalanoa/
+    - /usr/bin/rsync -rlptDvz --exclude=".git" --exclude=".gitignore" --exclude=".cpanel.yml" --exclude=".claude" --exclude="env" --exclude="app/Config/Database.php" --exclude="writable" --exclude="public/uploads" ./ $DEPLOYPATH
     - echo "Deployed to $DEPLOYPATH at $(date)"
