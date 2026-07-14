@@ -100,6 +100,17 @@ class MeetingController extends BaseController
         if (!$meeting) {
             return $this->response->setJSON(['error' => 'Meeting not found.'])->setStatusCode(404);
         }
+
+        // Only the host may see the meeting's real plaintext password —
+        // everyone else (any other authenticated participant) only learns
+        // whether one is required, mirroring resolve()'s shape.
+        $user   = session()->get('auth_user');
+        $isHost = $user && (int)$meeting['host_user_id'] === (int)$user['user_id'];
+        if (!$isHost) {
+            $meeting['password_required'] = !empty($meeting['password']);
+            unset($meeting['password']);
+        }
+
         return $this->response->setJSON(['data' => $meeting]);
     }
 
