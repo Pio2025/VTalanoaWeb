@@ -87,8 +87,9 @@ class MeetingController extends BaseController
         }
 
         return $this->response->setJSON([
-            'token'    => $meeting['meeting_token'],
-            'join_url' => base_url('join/' . $meeting['meeting_token']),
+            'token'             => $meeting['meeting_token'],
+            'join_url'          => base_url('join/' . $meeting['meeting_token']),
+            'password_required' => !empty($meeting['password']),
         ]);
     }
 
